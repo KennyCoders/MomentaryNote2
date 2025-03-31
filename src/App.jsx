@@ -1,6 +1,8 @@
 // src/App.jsx
 // ... imports ...
 
+import React, { useState, useEffect } from 'react';
+
 function App() {
     const [activeTab, setActiveTab] = useState('peoplesIdeas'); // Default to People's Ideas? Or check user status first?
     const [user, setUser] = useState(null); // State for the user object
