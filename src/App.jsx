@@ -1,9 +1,20 @@
 // src/App.jsx
 // ... imports ...
 
+// React imports for component definition and hooks
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
 
+// Supabase client import for authentication and data fetching
+import { supabase } from './supabaseClient'; // Assuming supabaseClient.js is in the same src folder
+
+// Import child components
+import Header from './components/Header'; // Assuming Header.jsx is in src/components/
+import Tabs from './components/Tabs'; // Assuming Tabs.jsx is in src/components/
+import MyIdeas from './components/MyIdeas'; // Assuming MyIdeas.jsx is in src/components/
+import PeoplesIdeas from './components/PeoplesIdeas'; // Assuming PeoplesIdeas.jsx is in src/components/
+
+// Import the CSS file for App component styling
+import './App.css'; // Assuming App.css is in the same src folder
 
 function App() {
     const [activeTab, setActiveTab] = useState('peoplesIdeas'); // Default to People's Ideas? Or check user status first?
