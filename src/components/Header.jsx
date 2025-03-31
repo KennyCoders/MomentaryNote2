@@ -1,6 +1,4 @@
 // src/components/Header.jsx
-import React from 'react';
-
 function Header({ user, onLogin, onLogout }) {
 
   return (
