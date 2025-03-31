@@ -2,6 +2,8 @@
 // ... imports ...
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
+
 
 function App() {
     const [activeTab, setActiveTab] = useState('peoplesIdeas'); // Default to People's Ideas? Or check user status first?
