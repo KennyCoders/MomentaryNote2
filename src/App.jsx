@@ -1,7 +1,7 @@
 // src/App.jsx
 
 // React imports for component definition and hooks
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // <-- Make sure useRef is listed here!
 
 // Supabase client import for authentication and data fetching
 import { supabase } from './supabaseClient'; // Assuming supabaseClient.js is in the same src folder
@@ -22,6 +22,9 @@ function App() {
   const [user, setUser] = useState(null);
   // State to track if the initial authentication check is in progress
   const [loadingAuth, setLoadingAuth] = useState(true);
+
+  const tabsRef = useRef(null); // Ref for the container holding the buttons
+  const sliderRef = useRef(null); // Ref for the slider element itself
 
   // --- Authentication Logic ---
   useEffect(() => {
@@ -76,6 +79,33 @@ function App() {
     };
   }, []); // Empty dependency array ensures this effect runs only once on mount
 
+
+  // --- Tab Slider Logic ---
+  useEffect(() => {
+    if (loadingAuth || !tabsRef.current || !sliderRef.current) return; // Don't run if loading or refs not ready
+
+    // Find the active button within the tabs container
+    const activeButton = tabsRef.current.querySelector(`.tab-button.active`);
+
+    if (activeButton) {
+        const tabContainerRect = tabsRef.current.getBoundingClientRect();
+        const activeButtonRect = activeButton.getBoundingClientRect();
+
+        // Calculate position relative to the tabs container
+        const left = activeButtonRect.left - tabContainerRect.left;
+        const width = activeButtonRect.width;
+
+        // Apply styles to the slider
+        sliderRef.current.style.left = `${left}px`;
+        sliderRef.current.style.width = `${width}px`;
+    } else {
+         // Optionally hide slider if no button is active (e.g., user logged out)
+         sliderRef.current.style.width = '0px';
+    }
+
+}, [activeTab, user, loadingAuth]); // Re-run when tab, user, or loading state changes
+  
+
   // --- Login Handler ---
   const handleLogin = async () => {
     try {
@@ -117,39 +147,40 @@ function App() {
     return <div className="loading-container">Loading...</div>;
   }
 
-  // Render the main application structure
-  return (
-    <div className="app-container"> {/* Main wrapper for centering and layout */}
-      {/* Render the Header, passing user data and login/logout handlers */}
-      <Header
-        user={user}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-      />
+// --- Render Logic ---
+    if (loadingAuth) {
+        return <div className="loading-container">Loading...</div>;
+    }
 
-      {/* Render the Tabs, passing user data, active tab state, and the state setter */}
-      <Tabs
-        user={user} // Pass user to conditionally render tabs if needed
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+    return (
+        <div className="app-container">
+            {/* Render Header (now just the top bar user actions) */}
+            <Header
+                user={user}
+                onLogin={handleLogin}
+                onLogout={handleLogout}
+            />
 
-      {/* Main content area where the selected tab's component is displayed */}
-      <main className="content-area">
-        {/* Conditionally render the MyIdeas component if the 'myIdeas' tab is active */}
-        {/* Pass the user object down, as MyIdeas needs it to fetch/upload user-specific data */}
-        {activeTab === 'myIdeas' && <MyIdeas user={user} />}
+            {/* Render the Main Title Centered */}
+            <h1 className="main-title">Momentary Note</h1>
 
-        {/* Conditionally render the PeoplesIdeas component if the 'peoplesIdeas' tab is active */}
-        {/* This component fetches public data, so it doesn't strictly need the user object */}
-        {activeTab === 'peoplesIdeas' && <PeoplesIdeas />}
-      </main>
+            {/* Render Tabs - Pass refs and slider element */}
+             {/* Conditionally render tabs only if user is logged in? Or always show? */}
+             {/* Let's always show them for now, disable 'My Ideas' if logged out */}
+            <Tabs
+                user={user}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                tabsRef={tabsRef} // Pass the ref for the container
+                sliderRef={sliderRef} // Pass the ref for the slider div
+            />
 
-      {/* Optional: You could add a Footer component here */}
-      {/* <Footer /> */}
-    </div>
-  );
+            {/* Main content area */}
+            <main className="content-area">
+                {activeTab === 'myIdeas' && <MyIdeas user={user} />}
+                {activeTab === 'peoplesIdeas' && <PeoplesIdeas />}
+            </main>
+        </div>
+    );
 }
-
-// Export the App component for use in your application's entry point (e.g., main.jsx)
 export default App;

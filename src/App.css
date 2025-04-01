@@ -21,13 +21,20 @@
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
   
-  body {
+  /* Ensure body and root allow centering */
+  html, body, #root {
+    height: 100%;
     margin: 0;
+    padding: 0;
+  }
+  
+  body {
     font-family: var(--font-family);
     font-size: var(--base-font-size);
     line-height: 1.6;
-    background-color: var(--light-gray); /* Light background for the page */
+    background-color: var(--light-gray);
     color: var(--text-color);
+    overflow-y: scroll; /* Prevent layout shift when scrollbar appears/disappears */
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -37,82 +44,141 @@
   }
   
   /* --- Main App Container (Centering) --- */
-  /* Apply a class like "app-container" to the main div in your App.jsx */
   .app-container {
     max-width: var(--page-max-width);
-    margin: 0 auto; /* Centers the container horizontally */
-    padding: 0 1rem; /* Add some padding on the sides */
-    min-height: 100vh; /* Ensure it takes full height */
-    display: flex;
-    flex-direction: column;
+    min-height: 100vh; /* Take full viewport height */
+    margin: 0 auto;       /* Center the container */
+    padding: 0 1rem;      /* Padding on sides */
+    display: flex;        /* Use flexbox for structure */
+    flex-direction: column; /* Stack children vertically */
   }
   
-  /* --- Header Styling --- */
-  .app-header {
+  /* --- Top Bar --- */
+  .top-bar {
     display: flex;
-    justify-content: space-between; /* Pushes title left, buttons right */
+    justify-content: flex-end; /* Pushes content (user actions) to the right */
     align-items: center;
-    padding: 1.5rem 0; /* Vertical padding, horizontal handled by app-container */
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0; /* Vertical padding, horizontal handled by app-container */
+    width: 100%; /* Ensure it spans the container width */
   }
   
-  .app-header h1 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: var(--text-color);
-    /* If you want the H1 strictly centered, flexbox needs adjustment */
-    /* flex-grow: 1; text-align: center; */ /* Uncomment if needed */
-  }
-  
-  .app-header > div { /* Target the div holding user info/login */
+  .top-bar .user-actions { /* Target the div holding user info/login */
     display: flex;
     align-items: center;
     gap: 0.8rem; /* Space between "Hi, User" and Logout button */
   }
   
-  .app-header > div span {
+  .top-bar .user-actions span {
       color: var(--dark-gray);
       font-weight: 500;
   }
   
+  /* Style buttons within the top bar */
+  .top-bar .user-actions button {
+     padding: 0.5rem 1rem;
+     font-size: 0.9rem;
+     border-radius: 6px;
+     cursor: pointer;
+     transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+     border: none; /* Ensure default borders are removed */
+     line-height: 1.4;
+  }
   
-  /* --- Tab Navigation (Assuming structure like <div className="tabs"><button>...</button></div>) --- */
+  /* Apply base styles and specific styles using composes or direct application */
+  /* Using direct class application here for simplicity */
+  .top-bar .user-actions .btn-login {
+      background-color: var(--primary-color);
+      color: white;
+  }
+  .top-bar .user-actions .btn-login:hover {
+      background-color: var(--primary-hover-color);
+      box-shadow: var(--box-shadow-light);
+  }
+  
+  .top-bar .user-actions .btn-logout {
+      background-color: var(--secondary-color);
+      color: white;
+  }
+  .top-bar .user-actions .btn-logout:hover {
+      background-color: var(--secondary-hover-color);
+      box-shadow: var(--box-shadow-light);
+  }
+  
+  
+  /* --- Main Title --- */
+  .main-title {
+    text-align: center;
+    font-size: 2.5rem; /* Larger title */
+    font-weight: 600;
+    margin-top: 0.5rem; /* Space below top bar */
+    margin-bottom: 2rem; /* Space above tabs */
+    color: var(--text-color);
+  }
+  
+  
+  /* --- Tab Navigation --- */
   .tabs {
     display: flex;
     justify-content: center; /* Center the tab buttons */
     margin-bottom: 2rem;
-    gap: 0.5rem;
+    gap: 0; /* Remove gap for sliding effect */
     border-bottom: 1px solid var(--border-color);
+    position: relative; /* Needed for the sliding indicator */
   }
   
   .tab-button {
-    padding: 0.8rem 1.5rem;
+    padding: 1rem 2.5rem; /* Increased padding for bigger buttons */
     border: none;
     background-color: transparent;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.2rem; /* Increased font size */
     color: var(--secondary-color);
-    border-bottom: 3px solid transparent; /* Placeholder for active indicator */
-    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+    border-bottom: 4px solid transparent; /* Keep for alignment, color is transparent */
+    transition: color 0.3s ease;
+    position: relative; /* Needed for z-index if overlap occurs */
+    z-index: 1;
     margin-bottom: -1px; /* Align bottom border with container's border */
+    white-space: nowrap; /* Prevent text wrapping */
   }
   
-  .tab-button:hover {
-    color: var(--primary-color);
+  .tab-button:hover:not(:disabled) { /* Add :not(:disabled) */
+    color: var(--primary-hover-color); /* Use hover color */
   }
   
   .tab-button.active {
-    color: var(--primary-color);
+    color: var(--primary-color); /* Active color remains */
     font-weight: 600;
-    border-bottom-color: var(--primary-color);
+  }
+  
+  .tab-button:disabled,
+  .tab-button.disabled { /* Style for disabled state */
+    color: var(--medium-gray);
+    cursor: not-allowed;
+  }
+  
+  
+  /* Sliding indicator */
+  .tab-slider {
+    position: absolute;
+    bottom: -1px; /* Align with the bottom border of .tabs */
+    height: 4px; /* Match the desired border thickness */
+    background-color: var(--primary-color);
+    border-radius: 2px;
+    transition: left 0.3s ease-in-out, width 0.3s ease-in-out; /* Smooth transition */
+    z-index: 2; /* Ensure it's above the transparent button borders */
+    /* Initial state handled by JS (width: 0 or position of default tab) */
+  }
+  
+  /* --- Main Content Area --- */
+  .content-area {
+      padding: 1rem 0; /* Add some padding */
+      flex-grow: 1; /* Allow content area to grow */
   }
   
   /* --- General Content Sections --- */
   .my-ideas-container,
   .peoples-ideas-container {
-    padding: 1rem 0; /* Add some vertical padding */
-    flex-grow: 1; /* Allows content to fill space if needed */
+    padding: 1rem 0; /* Consistent vertical padding */
   }
   
   /* --- Upload Form Styling --- */
@@ -155,6 +221,7 @@
   
   .upload-form input[type="file"] {
       padding: 0.5rem 0.9rem; /* Adjust padding for file input */
+      /* Consider specific styling for the file input button if desired */
   }
   
   .upload-form textarea {
@@ -184,7 +251,6 @@
   /* --- Grid Layout for Ideas --- */
   .ideas-grid {
     display: grid;
-    /* Responsive columns: min 300px wide, max 1fr (fill space) */
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem; /* Space between grid items */
   }
@@ -199,6 +265,7 @@
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     display: flex;
     flex-direction: column; /* Stack content vertically */
+    min-height: 200px; /* Example minimum height */
   }
   
   .idea-box:hover {
@@ -211,26 +278,32 @@
     margin-bottom: 0.6rem;
     word-break: break-word; /* Prevent long text overflowing */
   }
+  /* Remove extra margin from last p before audio/button */
   .idea-box p:last-of-type {
-      margin-bottom: 1rem; /* More space before audio/button */
+      margin-bottom: 0.6rem;
   }
   
   .idea-box .idea-filename {
       font-weight: 600;
       color: var(--text-color);
       font-size: 1.05rem;
+      margin-bottom: 0.4rem;
   }
   
   .idea-box .idea-description {
       font-style: italic;
       color: var(--dark-gray);
       font-size: 0.95rem;
+      flex-grow: 1; /* Allow description to take up space */
+      margin-bottom: 1rem;
   }
   
   .idea-box .idea-dates {
       font-size: 0.85rem;
       color: var(--secondary-color);
       line-height: 1.4;
+      margin-top: auto; /* Push dates towards bottom if description is short */
+      margin-bottom: 1rem;
   }
   
   /* --- Audio Player Styling --- */
@@ -238,14 +311,13 @@
   .idea-box .audio-player-container /* If AudioPlayer wraps the <audio> tag */
   {
     width: 100%;
-    margin-top: auto; /* Pushes player and button towards bottom if box height varies */
-    margin-bottom: 0.75rem;
+    margin-top: 0.5rem; /* Space above player */
+    margin-bottom: 0.75rem; /* Space below player */
   }
   
-  /* --- Button Styling --- */
-  /* Base button style */
+  /* --- General Button Styling --- */
   .btn {
-    display: inline-block; /* Allows setting width/padding */
+    display: inline-block;
     padding: 0.6rem 1.2rem;
     border: none;
     border-radius: 6px;
@@ -253,67 +325,58 @@
     font-size: 0.95rem;
     font-weight: 500;
     text-align: center;
-    text-decoration: none; /* Remove underline from link-like buttons */
+    text-decoration: none;
     transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-    line-height: 1.4; /* Ensure text vertical alignment */
+    line-height: 1.4;
   }
   
-  /* Primary button style (Login, Upload) */
+  /* Primary button style */
   .btn-primary {
     background-color: var(--primary-color);
     color: white;
   }
-  .btn-primary:hover {
+  .btn-primary:hover:not(:disabled) {
     background-color: var(--primary-hover-color);
     box-shadow: var(--box-shadow-light);
   }
   
-  /* Secondary button style (Logout) */
+  /* Secondary button style */
   .btn-secondary {
     background-color: var(--secondary-color);
     color: white;
   }
-  .btn-secondary:hover {
+  .btn-secondary:hover:not(:disabled) {
     background-color: var(--secondary-hover-color);
     box-shadow: var(--box-shadow-light);
   }
   
-  /* Danger button style (Remove) */
+  /* Danger button style */
   .btn-danger {
     background-color: var(--danger-color);
     color: white;
   }
-  .btn-danger:hover {
+  .btn-danger:hover:not(:disabled) {
     background-color: var(--danger-hover-color);
     box-shadow: var(--box-shadow-light);
   }
   
-  /* Apply base styles and specific styles to component buttons */
-  .app-header button { /* Login/Logout */
-    composes: btn btn-primary; /* If using CSS Modules */
-    /* Or just apply classes directly: */
-    /* padding: 0.5rem 1rem; font-size: 0.9rem; */ /* Example smaller header buttons */
-  }
-  .app-header button:last-child { /* Assuming Logout */
-     composes: btn btn-secondary;
-     /* background-color: var(--secondary-color); */
-  }
-  
-  
+  /* Apply general styles to specific buttons */
   .upload-form button[type="submit"] {
-    composes: btn btn-primary;
-    /* Or apply classes directly: */
-    /* background-color: var(--primary-color); color: white; */
-    width: 100%; /* Make upload button full width */
+    /* composes: btn btn-primary; */ /* Use if using CSS Modules */
+    /* Direct application: */
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
     padding: 0.8rem 1.2rem;
     font-size: 1rem;
   }
   
   .idea-box .remove-button {
-    composes: btn btn-danger;
-    /* Or apply classes directly: */
-    /* background-color: var(--danger-color); color: white; */
-    margin-top: 0.5rem; /* Space above remove button */
+    /* composes: btn btn-danger; */ /* Use if using CSS Modules */
+    /* Direct application: */
+    background-color: var(--danger-color);
+    color: white;
+    margin-top: auto; /* Pushes button to bottom if space allows */
     align-self: flex-start; /* Don't stretch full width */
     padding: 0.4rem 0.8rem; /* Slightly smaller button */
     font-size: 0.85rem;
@@ -333,6 +396,13 @@
       margin-top: 1rem;
       text-align: center;
       min-height: 1.5em; /* Reserve space to prevent layout jumps */
+      font-size: 0.9rem;
+  }
+  .form-feedback { /* Specific styling if needed */
+      margin-top: 1.25rem;
+  }
+  .list-feedback { /* Specific styling if needed */
+       margin-bottom: 1rem;
   }
   
   .error-message {
@@ -353,21 +423,32 @@
     margin: 2rem 0;
   }
   
-  /* --- Responsive Adjustments (Optional Example) --- */
+  /* --- Loading State --- */
+  .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px; /* Or full height if desired */
+      font-size: 1.2rem;
+      color: var(--dark-gray);
+  }
+  
+  
+  /* --- Responsive Adjustments --- */
   @media (max-width: 768px) {
     :root {
       --base-font-size: 15px;
     }
     .app-container {
-      padding: 0 0.5rem;
+      padding: 0 0.75rem;
     }
-    .app-header {
-      flex-direction: column;
-      gap: 0.5rem;
-      padding: 1rem 0;
+    .main-title {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
     }
-     .app-header > div {
-       margin-top: 0.5rem;
+     .tab-button {
+         padding: 0.8rem 1.5rem;
+         font-size: 1.1rem;
      }
      .ideas-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -382,15 +463,18 @@
   }
   
   @media (max-width: 480px) {
+      .main-title {
+          font-size: 1.8rem;
+      }
+      .tab-button {
+          padding: 0.6rem 1rem; /* Further reduce padding */
+          font-size: 1rem;
+      }
       .ideas-grid {
         /* Stack boxes on very small screens */
         grid-template-columns: 1fr;
       }
-       .tabs {
-           gap: 0;
+       .top-bar .user-actions span { /* Hide user name on small screens */
+          display: none;
        }
-      .tab-button {
-          padding: 0.6rem 0.8rem;
-          font-size: 1rem;
-      }
   }

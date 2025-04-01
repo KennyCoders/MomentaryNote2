@@ -74,18 +74,43 @@ function MyIdeas({ user }) {
         setFile(selectedFile);
     };
 
+
     // --- Upload Logic ---
+
     const handleUpload = async (event) => {
         event.preventDefault();
-        if (!file || !duration) {
-            setFormError("Please select a file and choose a duration.");
+        // Check duration value exists (value="0" is valid)
+        if (!file || duration === '') {
+            setFormError("Please select a file and choose a visibility option.");
             return;
         }
+
         setUploading(true);
         setFormError(null);
         setFormMessage('');
+
         const filePath = `public/${user.id}/${Date.now()}_${file.name}`;
-        const hiddenDurationSeconds = parseInt(duration, 10);
+        // Parse duration, default to 0 if it's the public option
+        const hiddenDurationSeconds = parseInt(duration, 10); // Will be 0 for "Make Public Immediately"
+
+        // Determine is_public and expires_at based on duration
+        let isPublic = false;
+        let expiresAt = null;
+        const now = new Date();
+
+        if (hiddenDurationSeconds === 0) {
+            // Make public immediately
+            isPublic = true;
+            // expires_at can be null or now, depends on your preference/table definition
+            expiresAt = now.toISOString(); // Or set to null if column allows
+            console.log("Setting is_public to TRUE immediately.");
+        } else {
+            // Keep hidden for the selected duration
+            isPublic = false;
+            expiresAt = new Date(now.getTime() + hiddenDurationSeconds * 1000).toISOString();
+            console.log(`Setting is_public to FALSE, expires at: ${expiresAt}`);
+        }
+
 
         try {
             setFormMessage('Uploading file...');
@@ -95,21 +120,22 @@ function MyIdeas({ user }) {
             if (uploadError) throw new Error(`Storage Error: ${uploadError.message}`);
 
             setFormMessage('Saving idea details...');
-            const now = new Date();
-            const expiresAt = new Date(now.getTime() + hiddenDurationSeconds * 1000).toISOString();
+
+            // Use the determined isPublic and expiresAt values
             const { data: insertedData, error: insertError } = await supabase
                 .from('ideas')
                 .insert({
                     user_id: user.id,
                     description: description || null,
                     file_path: filePath,
-                    hidden_duration_seconds: hiddenDurationSeconds,
-                    expires_at: expiresAt,
-                    is_public: false,
+                    hidden_duration_seconds: hiddenDurationSeconds, // Store the selected duration (0 for public)
+                    expires_at: expiresAt,                         // Store calculated expiry or null/now
+                    is_public: isPublic,                           // Store calculated public status
                     original_filename: file.name,
                 })
                 .select()
                 .single();
+
             if (insertError) throw new Error(`Database Error: ${insertError.message}`);
 
             console.log('Upload successful:', insertedData);
@@ -117,8 +143,8 @@ function MyIdeas({ user }) {
             fetchMyIdeas(); // Refresh the list
             setFile(null);
             setDescription('');
-            setDuration('');
-            if (event.target instanceof HTMLFormElement) { // Type check for safety
+            setDuration(''); // Reset duration dropdown
+            if (event.target instanceof HTMLFormElement) {
                 event.target.reset();
             }
         } catch (err) {
@@ -197,12 +223,14 @@ function MyIdeas({ user }) {
                     </div>
                     {/* Duration Select */}
                     <div className="form-group">
-                        <label htmlFor="duration">Keep Hidden For:</label>
+                        <label htmlFor="duration">Visibility:</label> {/* Changed Label */}
                         <select id="duration" value={duration} onChange={(e) => setDuration(e.target.value)} disabled={uploading} required>
-                            <option value="" disabled>-- Select duration --</option>
-                            <option value="604800">1 Week</option>        {/* 7 days */}
-                            <option value="1209600">2 Weeks</option>       {/* 14 days */}
-                            <option value="2592000">1 Month</option> {/* 30 days */}
+                            <option value="" disabled>-- Select visibility --</option>
+                            {/* Add this new option with value="0" */}
+                            <option value="0">Make Public Immediately</option>
+                            <option value="604800">Hidden for 1 Week</option>
+                            <option value="1209600">Hidden for 2 Weeks</option>
+                            <option value="2592000">Hidden for 1 Month</option>
                         </select>
                     </div>
                     {/* Submit Button - ADDED CLASSES HERE */}
