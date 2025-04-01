@@ -11,8 +11,6 @@ import Header from './components/Header';     // Component for the top bar
 import Tabs from './components/Tabs';         // Component for tab navigation
 import MyIdeas from './components/MyIdeas';     // Component to display user's private ideas
 import PeoplesIdeas from './components/PeoplesIdeas'; // Component to display public ideas
-
-// Import the CSS file for App component styling
 import './App.css'; // Assuming App.css is in the same src folder
 
 function App() {
@@ -23,6 +21,7 @@ function App() {
   // State to track if the initial authentication check is in progress
   const [loadingAuth, setLoadingAuth] = useState(true);
 
+  
   const tabsRef = useRef(null); // Ref for the container holding the buttons
   const sliderRef = useRef(null); // Ref for the slider element itself
 
@@ -154,30 +153,40 @@ function App() {
 
     return (
         <div className="app-container">
-            {/* Render Header (now just the top bar user actions) */}
-            <Header
-                user={user}
-                onLogin={handleLogin}
-                onLogout={handleLogout}
-            />
-
-            {/* Render the Main Title Centered */}
+            <Header user={user} onLogin={handleLogin} onLogout={handleLogout} />
             <h1 className="main-title">Momentary Note</h1>
-
-            {/* Render Tabs - Pass refs and slider element */}
-             {/* Conditionally render tabs only if user is logged in? Or always show? */}
-             {/* Let's always show them for now, disable 'My Ideas' if logged out */}
             <Tabs
                 user={user}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
-                tabsRef={tabsRef} // Pass the ref for the container
-                sliderRef={sliderRef} // Pass the ref for the slider div
+                tabsRef={tabsRef}
+                sliderRef={sliderRef}
             />
 
-            {/* Main content area */}
+            {/* --- Updated Main Content Area --- */}
             <main className="content-area">
-                {activeTab === 'myIdeas' && <MyIdeas user={user} />}
+                {/* Check which tab is active */}
+                {activeTab === 'myIdeas' ? (
+                    // If 'My Ideas' tab is active, check if user is logged in
+                    user ? (
+                        // If logged in, show the MyIdeas component
+                        <MyIdeas user={user} />
+                    ) : (
+                        // If logged OUT, show the login prompt
+                        <div className="login-prompt">
+                            <p>
+                                To be able to add and view your ideas, please{' '}
+                                {/* Make "log in" a clickable button styled as a link */}
+                                <button className="link-button" onClick={handleLogin}>
+                                    log in
+                                </button>
+                                .
+                            </p>
+                        </div>
+                    )
+                ) : null /* If 'My Ideas' tab is not active, render nothing here */}
+
+                {/* Always render PeoplesIdeas if that tab is active */}
                 {activeTab === 'peoplesIdeas' && <PeoplesIdeas />}
             </main>
         </div>

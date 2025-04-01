@@ -478,3 +478,55 @@
           display: none;
        }
   }
+
+  /* --- Login Prompt Styling (Add these new rules) --- */
+.login-prompt {
+    text-align: center;
+    padding: 3rem 1rem; /* Add some spacing */
+    margin-top: 2rem; /* Space from tabs */
+    color: var(--dark-gray);
+    background-color: #fff; /* Optional: Give it a light background */
+    border: 1px solid var(--border-color); /* Optional: border */
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-light);
+  }
+  
+  .login-prompt p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin: 0; /* Remove default paragraph margin */
+  }
+  
+  .link-button { /* Style the button to look like a link */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: var(--primary-color); /* Use primary color */
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit; /* Match surrounding text size */
+    font-family: inherit; /* Match surrounding font */
+    font-weight: 600; /* Make it stand out slightly */
+    vertical-align: baseline; /* Align with text */
+  }
+  .link-button:hover {
+     color: var(--primary-hover-color);
+     text-decoration: none; /* Optional: remove underline on hover */
+  }
+  
+  /* --- Optional Styling for Logged-Out Tab (Add this) --- */
+  .tab-button.logged-out-view:not(.active) {
+      /* Slightly fade it out or change color to indicate it's different, */
+      /* but still clickable */
+      opacity: 0.7;
+      /* color: var(--medium-gray); */ /* Alternative: change color */
+  }
+  
+  /* Ensure disabled styles don't conflict if you kept them */
+  .tab-button:disabled,
+  .tab-button.disabled { /* Style for disabled state (if you ever re-add disabled) */
+    color: var(--medium-gray);
+    cursor: not-allowed;
+    opacity: 0.5; /* Make it more faded */
+  }

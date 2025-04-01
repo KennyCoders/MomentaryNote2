@@ -5,11 +5,7 @@ import React from 'react';
 function Tabs({ user, activeTab, setActiveTab, tabsRef, sliderRef }) {
 
     const handleTabClick = (tabName) => {
-        // Prevent switching to 'My Ideas' if not logged in
-        if (tabName === 'myIdeas' && !user) {
-            alert("Please log in to view your ideas."); // Or handle differently
-            return;
-        }
+       
         setActiveTab(tabName);
     };
 
@@ -17,9 +13,10 @@ function Tabs({ user, activeTab, setActiveTab, tabsRef, sliderRef }) {
         // Assign the container ref here
         <div className="tabs" ref={tabsRef}>
             <button
-                className={`tab-button ${activeTab === 'myIdeas' ? 'active' : ''} ${!user ? 'disabled' : ''}`} // Add disabled class visually if needed
+                // Use 'disabled' class for potential styling, but REMOVE the disabled attribute
+                className={`tab-button ${activeTab === 'myIdeas' ? 'active' : ''} ${!user ? 'logged-out-view' : ''}`} // Changed 'disabled' class to 'logged-out-view' for clarity
                 onClick={() => handleTabClick('myIdeas')}
-                disabled={!user} // Optionally disable interaction too
+                // REMOVED: disabled={!user} - Make it always clickable
             >
                 My Ideas
             </button>
