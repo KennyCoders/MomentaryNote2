@@ -1,5 +1,4 @@
 // src/App.jsx
-// ... imports ...
 
 // React imports for component definition and hooks
 import React, { useState, useEffect } from 'react';
@@ -8,113 +7,149 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient'; // Assuming supabaseClient.js is in the same src folder
 
 // Import child components
-import Header from './components/Header'; // Assuming Header.jsx is in src/components/
-import Tabs from './components/Tabs'; // Assuming Tabs.jsx is in src/components/
-import MyIdeas from './components/MyIdeas'; // Assuming MyIdeas.jsx is in src/components/
-import PeoplesIdeas from './components/PeoplesIdeas'; // Assuming PeoplesIdeas.jsx is in src/components/
+import Header from './components/Header';     // Component for the top bar
+import Tabs from './components/Tabs';         // Component for tab navigation
+import MyIdeas from './components/MyIdeas';     // Component to display user's private ideas
+import PeoplesIdeas from './components/PeoplesIdeas'; // Component to display public ideas
 
 // Import the CSS file for App component styling
 import './App.css'; // Assuming App.css is in the same src folder
 
 function App() {
-    const [activeTab, setActiveTab] = useState('peoplesIdeas'); // Default to People's Ideas? Or check user status first?
-    const [user, setUser] = useState(null); // State for the user object
-    const [loadingAuth, setLoadingAuth] = useState(true); // State to track initial auth check
-  
-    // --- Move Auth Logic Here ---
-    useEffect(() => {
-      setLoadingAuth(true);
-      // Check initial session
-      const fetchSession = async () => {
-         const { data: { session } } = await supabase.auth.getSession();
-         setUser(session?.user ?? null);
-         setLoadingAuth(false);
-         // If user exists on load, maybe default to My Ideas?
-         if (session?.user) {
-              setActiveTab('myIdeas');
-         } else {
-              setActiveTab('peoplesIdeas'); // Ensure default if no user
-         }
-      }
-      fetchSession();
-  
-      // Listen for auth changes (login/logout)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  // State to manage which tab is currently active ('myIdeas' or 'peoplesIdeas')
+  const [activeTab, setActiveTab] = useState('peoplesIdeas'); // Default before auth check
+  // State to hold the authenticated user object (null if not logged in)
+  const [user, setUser] = useState(null);
+  // State to track if the initial authentication check is in progress
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  // --- Authentication Logic ---
+  useEffect(() => {
+    setLoadingAuth(true); // Indicate loading when the component mounts
+
+    // Function to check the current session state on initial load
+    const fetchSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error; // Handle potential errors during session fetching
+
         const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        // If user logs out while on My Ideas tab, switch to People's Ideas
-        if (_event === 'SIGNED_OUT') {
-            setActiveTab('peoplesIdeas');
+        setUser(currentUser); // Set user state based on session
+
+        // Set the initial active tab based on login status
+        if (currentUser) {
+          setActiveTab('myIdeas'); // Default to 'My Ideas' if logged in
+        } else {
+          setActiveTab('peoplesIdeas'); // Default to 'People's Ideas' if not logged in
         }
-   
-        if (_event === 'SIGNED_IN') {
-           setActiveTab('myIdeas');
-        }
-        // Stop loading indicator only after the listener is set up AND initial check is done (if needed)
-        setLoadingAuth(false); // Moved setLoading(false) into fetchSession for clarity
+      } catch (error) {
+        console.error("Error fetching initial session:", error.message);
+        // Keep the default 'peoplesIdeas' tab if there's an error
+        setActiveTab('peoplesIdeas');
+      } finally {
+        setLoadingAuth(false); // Stop loading indicator after initial check completes
+      }
+    };
+
+    fetchSession(); // Call the function to check the session
+
+    // --- Authentication State Change Listener ---
+    // Subscribe to changes in the user's authentication state (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser); // Update user state whenever auth state changes
+
+      // Adjust the active tab based on login/logout events
+      if (_event === 'SIGNED_IN') {
+        setActiveTab('myIdeas'); // Switch to 'My Ideas' upon login
+      } else if (_event === 'SIGNED_OUT') {
+        setActiveTab('peoplesIdeas'); // Switch to 'People's Ideas' upon logout
+      }
+      // Note: setLoadingAuth is primarily for the *initial* load,
+      // so we don't typically set it back to false here.
+    });
+
+    // --- Cleanup ---
+    // Unsubscribe from the listener when the component unmounts to prevent memory leaks
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []); // Empty dependency array ensures this effect runs only once on mount
+
+  // --- Login Handler ---
+  const handleLogin = async () => {
+    try {
+      // Initiate Google OAuth login flow
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        // Optional: specify where to redirect after login if needed
+        // options: {
+        //   redirectTo: window.location.origin
+        // }
       });
-  
-      // Cleanup subscription on component unmount
-      return () => subscription?.unsubscribe();
-    }, []); // Empty dependency array means this runs once on mount
-  
-    // --- Move Login/Logout Handlers Here ---
-     const handleLogin = async () => {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          // Optional: Add redirect options if needed later
-          // options: {
-          //   redirectTo: window.location.origin // Redirect back to your app page after Google login
-          // }
-        });
-        if (error) throw error;
-        // No need to setUser here, onAuthStateChange listener will handle it
-      } catch (error) {
-        console.error('Error logging in:', error.message);
-        alert('Error logging in: ' + error.message);
-      }
-    };
-  
-    const handleLogout = async () => {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-         // No need to setUser here, onAuthStateChange listener will handle it
-      } catch (error) {
-        console.error('Error logging out:', error.message);
-        alert('Error logging out: ' + error.message);
-      }
-    };
-  
-  
-    // --- Render Logic ---
-    // Show loading indicator while checking auth initially
-    if (loadingAuth) {
-      return <div>Loading authentication...</div>;
+      if (error) throw error; // Throw error to be caught below
+      // The onAuthStateChange listener will handle setting the user state
+    } catch (error) {
+      console.error('Error logging in:', error.message);
+      alert('Login failed: ' + error.message); // Simple user feedback
     }
-  
-    return (
-      <div className="app-container">
-        {/* Pass user state and handlers down to Header */}
-        <Header
-            user={user}
-            onLogin={handleLogin}
-            onLogout={handleLogout}
-        />
-        {/* Pass user state and active tab state down to Tabs */}
-        <Tabs
-            user={user} /* Pass user to Tabs */
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-        />
-        <main className="content-area">
-          {/* Pass user state down to MyIdeas */}
-          {activeTab === 'myIdeas' && <MyIdeas user={user} />} {/* Pass user to MyIdeas */}
-          {activeTab === 'peoplesIdeas' && <PeoplesIdeas />} {/* People's Ideas doesn't strictly need user, but could */}
-        </main>
-      </div>
-    );
+  };
+
+  // --- Logout Handler ---
+  const handleLogout = async () => {
+    try {
+      // Sign the user out
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error; // Throw error to be caught below
+      // The onAuthStateChange listener will handle clearing the user state and changing the tab
+    } catch (error) {
+      console.error('Error logging out:', error.message);
+      alert('Logout failed: ' + error.message); // Simple user feedback
+    }
+  };
+
+
+  // --- Render Logic ---
+
+  // Display a loading message while checking the initial authentication status
+  if (loadingAuth) {
+    // You could replace this with a more sophisticated loading spinner component
+    return <div className="loading-container">Loading...</div>;
   }
-  
-  export default App;
+
+  // Render the main application structure
+  return (
+    <div className="app-container"> {/* Main wrapper for centering and layout */}
+      {/* Render the Header, passing user data and login/logout handlers */}
+      <Header
+        user={user}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
+
+      {/* Render the Tabs, passing user data, active tab state, and the state setter */}
+      <Tabs
+        user={user} // Pass user to conditionally render tabs if needed
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+
+      {/* Main content area where the selected tab's component is displayed */}
+      <main className="content-area">
+        {/* Conditionally render the MyIdeas component if the 'myIdeas' tab is active */}
+        {/* Pass the user object down, as MyIdeas needs it to fetch/upload user-specific data */}
+        {activeTab === 'myIdeas' && <MyIdeas user={user} />}
+
+        {/* Conditionally render the PeoplesIdeas component if the 'peoplesIdeas' tab is active */}
+        {/* This component fetches public data, so it doesn't strictly need the user object */}
+        {activeTab === 'peoplesIdeas' && <PeoplesIdeas />}
+      </main>
+
+      {/* Optional: You could add a Footer component here */}
+      {/* <Footer /> */}
+    </div>
+  );
+}
+
+// Export the App component for use in your application's entry point (e.g., main.jsx)
+export default App;
