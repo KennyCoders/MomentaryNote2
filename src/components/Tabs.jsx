@@ -18,13 +18,13 @@ function Tabs({ user, activeTab, setActiveTab, tabsRef, sliderRef }) {
                 onClick={() => handleTabClick('myIdeas')}
                 // REMOVED: disabled={!user} - Make it always clickable
             >
-                My Ideas
+                My Notes
             </button>
             <button
                 className={`tab-button ${activeTab === 'peoplesIdeas' ? 'active' : ''}`}
                 onClick={() => handleTabClick('peoplesIdeas')}
             >
-                People's Ideas
+                Shared Notes
             </button>
             {/* Add the slider element - assign its ref here */}
             <div className="tab-slider" ref={sliderRef}></div>

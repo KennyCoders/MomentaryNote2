@@ -1,24 +1,34 @@
 // src/components/Header.jsx
 import React from 'react';
+// We'll add the necessary CSS classes in App.css
 
-// Header now just renders the top-right user actions
 function Header({ user, onLogin, onLogout }) {
-    return (
-        <header className="top-bar"> {/* Use top-bar class */}
-            <div className="user-actions"> {/* Wrapper for user info/buttons */}
-                {user ? (
-                    <>
-                        <span>Hi, {user.user_metadata?.full_name || user.email}</span>
-                        {/* Added btn-logout class */}
-                        <button onClick={onLogout} className="btn btn-secondary btn-logout">Logout</button>
-                    </>
-                ) : (
-                    /* Added btn-login class */
-                    <button onClick={onLogin} className="btn btn-primary btn-login">Login with Google</button>
-                )}
-            </div>
-        </header>
-    );
+  return (
+    // Use a <header> tag for semantics
+    // Add the 'app-header' class for styling
+    <header className="app-header">
+      {/* Add an inner container to constrain the content width */}
+      <div className="header-content">
+        {/* This div now holds the user actions */}
+        <div className="user-actions">
+          {user ? (
+            // If user is logged in
+            <>
+              <span>Hi, {user.email?.split('@')[0] || 'User'}</span> {/* Display part of email or "User" */}
+              <button onClick={onLogout} className="btn-logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            // If user is logged out
+            <button onClick={onLogin} className="btn-login">
+              Login with Google
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
 }
 
 export default Header;

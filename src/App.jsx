@@ -1,195 +1,190 @@
 // src/App.jsx
 
 // React imports for component definition and hooks
-import React, { useState, useEffect, useRef } from 'react'; // <-- Make sure useRef is listed here!
+import React, { useState, useEffect, useRef } from 'react';
 
-// Supabase client import for authentication and data fetching
-import { supabase } from './supabaseClient'; // Assuming supabaseClient.js is in the same src folder
+// Supabase client import (only used when not in mock mode)
+import { supabase } from './supabaseClient';
 
 // Import child components
-import Header from './components/Header';     // Component for the top bar
-import Tabs from './components/Tabs';         // Component for tab navigation
-import MyIdeas from './components/MyIdeas';     // Component to display user's private ideas
-import PeoplesIdeas from './components/PeoplesIdeas'; // Component to display public ideas
-import './App.css'; // Assuming App.css is in the same src folder
+import Header from './components/Header';
+import Tabs from './components/Tabs';
+import MyIdeas from './components/MyIdeas';
+import PeoplesIdeas from './components/PeoplesIdeas';
+import './App.css'; // Main application styles
+
+// Import mock data (used only when in mock mode)
+import { mockUser } from './mockData';
+
+// Helper to determine if we are running in mock mode
+const isMockMode = import.meta.env.VITE_USE_MOCK_DATA === 'false';
 
 function App() {
-  // State to manage which tab is currently active ('myIdeas' or 'peoplesIdeas')
-  const [activeTab, setActiveTab] = useState('peoplesIdeas'); // Default before auth check
-  // State to hold the authenticated user object (null if not logged in)
-  const [user, setUser] = useState(null);
-  // State to track if the initial authentication check is in progress
-  const [loadingAuth, setLoadingAuth] = useState(true);
+    // State
+    const [activeTab, setActiveTab] = useState('peoplesIdeas');
+    const [user, setUser] = useState(null);
+    const [loadingAuth, setLoadingAuth] = useState(!isMockMode);
 
-  
-  const tabsRef = useRef(null); // Ref for the container holding the buttons
-  const sliderRef = useRef(null); // Ref for the slider element itself
+    // Refs
+    const tabsRef = useRef(null);
+    const sliderRef = useRef(null);
 
-  // --- Authentication Logic ---
-  useEffect(() => {
-    setLoadingAuth(true); // Indicate loading when the component mounts
-
-    // Function to check the current session state on initial load
-    const fetchSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error; // Handle potential errors during session fetching
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser); // Set user state based on session
-
-        // Set the initial active tab based on login status
-        if (currentUser) {
-          setActiveTab('myIdeas'); // Default to 'My Ideas' if logged in
-        } else {
-          setActiveTab('peoplesIdeas'); // Default to 'People's Ideas' if not logged in
+    // --- Authentication Logic ---
+    useEffect(() => {
+        if (isMockMode) {
+            console.warn("----- RUNNING IN MOCK MODE -----");
+            setUser(mockUser);
+            setActiveTab(mockUser ? 'myIdeas' : 'peoplesIdeas');
+            setLoadingAuth(false);
+            return;
         }
-      } catch (error) {
-        console.error("Error fetching initial session:", error.message);
-        // Keep the default 'peoplesIdeas' tab if there's an error
-        setActiveTab('peoplesIdeas');
-      } finally {
-        setLoadingAuth(false); // Stop loading indicator after initial check completes
-      }
+
+        console.log("----- RUNNING IN LIVE MODE (using Supabase) -----");
+        setLoadingAuth(true);
+        const fetchSession = async () => {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                const currentUser = session?.user ?? null;
+                setUser(currentUser);
+                setActiveTab(currentUser ? 'myIdeas' : 'peoplesIdeas');
+            } catch (error) {
+                console.error("Error fetching initial session:", error.message);
+                setActiveTab('peoplesIdeas');
+            } finally {
+                setLoadingAuth(false);
+            }
+        };
+        fetchSession();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            if (!loadingAuth) {
+                if (_event === 'SIGNED_IN') setActiveTab('myIdeas');
+                else if (_event === 'SIGNED_OUT') setActiveTab('peoplesIdeas');
+            }
+        });
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, [loadingAuth]); // Dependency array remains correct
+
+
+    // --- Tab Slider Logic ---
+    useEffect(() => {
+        if (loadingAuth || !tabsRef.current || !sliderRef.current) return;
+        const activeButton = tabsRef.current.querySelector(`.tab-button.active`);
+        if (activeButton) {
+            const tabContainerRect = tabsRef.current.getBoundingClientRect();
+            const activeButtonRect = activeButton.getBoundingClientRect();
+            const left = activeButtonRect.left - tabContainerRect.left;
+            const width = activeButtonRect.width;
+            sliderRef.current.style.left = `${left}px`;
+            sliderRef.current.style.width = `${width}px`;
+        } else {
+            sliderRef.current.style.width = '0px';
+            sliderRef.current.style.left = '0px';
+        }
+    }, [activeTab, user, loadingAuth]);
+
+
+    // --- Login Handler ---
+    const handleLogin = async () => {
+        if (isMockMode) {
+            console.log("Mock Login");
+            const userToLogin = mockUser || { id: 'mock-user-123', email: 'local.dev@example.com' };
+            setUser(userToLogin);
+            setActiveTab('myIdeas');
+            return;
+        }
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error logging in:', error.message);
+            alert('Login failed: ' + error.message);
+        }
     };
 
-    fetchSession(); // Call the function to check the session
-
-    // --- Authentication State Change Listener ---
-    // Subscribe to changes in the user's authentication state (login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser); // Update user state whenever auth state changes
-
-      // Adjust the active tab based on login/logout events
-      if (_event === 'SIGNED_IN') {
-        setActiveTab('myIdeas'); // Switch to 'My Ideas' upon login
-      } else if (_event === 'SIGNED_OUT') {
-        setActiveTab('peoplesIdeas'); // Switch to 'People's Ideas' upon logout
-      }
-      // Note: setLoadingAuth is primarily for the *initial* load,
-      // so we don't typically set it back to false here.
-    });
-
-    // --- Cleanup ---
-    // Unsubscribe from the listener when the component unmounts to prevent memory leaks
-    return () => {
-      subscription?.unsubscribe();
+    // --- Logout Handler ---
+    // Corrected comment placement or removal
+    const handleLogout = async () => {
+        if (isMockMode) {
+            console.log("Mock Logout");
+            setUser(null);
+            setActiveTab('peoplesIdeas');
+            return;
+        }
+        // Comment moved or removed from between } and try
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error logging out:', error.message);
+            alert('Logout failed: ' + error.message);
+        }
     };
-  }, []); // Empty dependency array ensures this effect runs only once on mount
 
-
-  // --- Tab Slider Logic ---
-  useEffect(() => {
-    if (loadingAuth || !tabsRef.current || !sliderRef.current) return; // Don't run if loading or refs not ready
-
-    // Find the active button within the tabs container
-    const activeButton = tabsRef.current.querySelector(`.tab-button.active`);
-
-    if (activeButton) {
-        const tabContainerRect = tabsRef.current.getBoundingClientRect();
-        const activeButtonRect = activeButton.getBoundingClientRect();
-
-        // Calculate position relative to the tabs container
-        const left = activeButtonRect.left - tabContainerRect.left;
-        const width = activeButtonRect.width;
-
-        // Apply styles to the slider
-        sliderRef.current.style.left = `${left}px`;
-        sliderRef.current.style.width = `${width}px`;
-    } else {
-         // Optionally hide slider if no button is active (e.g., user logged out)
-         sliderRef.current.style.width = '0px';
-    }
-
-}, [activeTab, user, loadingAuth]); // Re-run when tab, user, or loading state changes
-  
-
-  // --- Login Handler ---
-  const handleLogin = async () => {
-    try {
-      // Initiate Google OAuth login flow
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        // Optional: specify where to redirect after login if needed
-        // options: {
-        //   redirectTo: window.location.origin
-        // }
-      });
-      if (error) throw error; // Throw error to be caught below
-      // The onAuthStateChange listener will handle setting the user state
-    } catch (error) {
-      console.error('Error logging in:', error.message);
-      alert('Login failed: ' + error.message); // Simple user feedback
-    }
-  };
-
-  // --- Logout Handler ---
-  const handleLogout = async () => {
-    try {
-      // Sign the user out
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error; // Throw error to be caught below
-      // The onAuthStateChange listener will handle clearing the user state and changing the tab
-    } catch (error) {
-      console.error('Error logging out:', error.message);
-      alert('Logout failed: ' + error.message); // Simple user feedback
-    }
-  };
-
-
-  // --- Render Logic ---
-
-  // Display a loading message while checking the initial authentication status
-  if (loadingAuth) {
-    // You could replace this with a more sophisticated loading spinner component
-    return <div className="loading-container">Loading...</div>;
-  }
-
-// --- Render Logic ---
+    // --- Render Logic ---
     if (loadingAuth) {
         return <div className="loading-container">Loading...</div>;
     }
 
+    // *** Main App Structure with Fragment Wrapper ***
     return (
-        <div className="app-container">
-            <Header user={user} onLogin={handleLogin} onLogout={handleLogout} />
-            <h1 className="main-title">Momentary Note</h1>
-            <Tabs
-                user={user}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                tabsRef={tabsRef}
-                sliderRef={sliderRef}
-            />
+      <> {/* Single parent element: Fragment */}
 
-            {/* --- Updated Main Content Area --- */}
-            <main className="content-area">
-                {/* Check which tab is active */}
-                {activeTab === 'myIdeas' ? (
-                    // If 'My Ideas' tab is active, check if user is logged in
-                    user ? (
-                        // If logged in, show the MyIdeas component
-                        <MyIdeas user={user} />
-                    ) : (
-                        // If logged OUT, show the login prompt
-                        <div className="login-prompt">
-                            <p>
-                                To be able to add and view your ideas, please{' '}
-                                {/* Make "log in" a clickable button styled as a link */}
-                                <button className="link-button" onClick={handleLogin}>
-                                    log in
-                                </button>
-                                .
-                            </p>
-                        </div>
-                    )
-                ) : null /* If 'My Ideas' tab is not active, render nothing here */}
+          {/* Header is rendered first, outside the centered container */}
+          <Header user={user} onLogin={handleLogin} onLogout={handleLogout} />
 
-                {/* Always render PeoplesIdeas if that tab is active */}
-                {activeTab === 'peoplesIdeas' && <PeoplesIdeas />}
-            </main>
-        </div>
+          {/* The main centered content container */}
+          <div className="app-container">
+              {/* Main Title */}
+              <h1 className="main-title">
+                  Momentary{' '}
+                  <span className="title-char">N</span>
+                  <span className="title-char">o</span>
+                  <span className="title-char">t</span>
+                  <span className="title-char">e</span>
+                  {' '}♪
+              </h1>
+
+              {/* Tabs */}
+              <Tabs
+                  user={user}
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  tabsRef={tabsRef}
+                  sliderRef={sliderRef}
+              />
+
+              {/* Main Content Area */}
+              <main className="content-area">
+                  {/* Conditional Rendering based on activeTab */}
+                  {activeTab === 'myIdeas' ? (
+                      user ? (
+                          <MyIdeas user={user} isMockMode={isMockMode} />
+                      ) : (
+                          <div className="login-prompt">
+                              <p>
+                                  To be able to add and view your ideas, please{' '}
+                                  <button className="link-button" onClick={handleLogin}>
+                                      log in
+                                  </button>
+                                  .
+                              </p>
+                          </div>
+                      )
+                  ) : null}
+
+                  {activeTab === 'peoplesIdeas' && <PeoplesIdeas isMockMode={isMockMode} />}
+              </main>
+          </div> {/* End app-container comment removed or placed inside */}
+
+      </> // Trailing comment removed
     );
 }
+
 export default App;

@@ -1,58 +1,76 @@
+/* src/index.css (or equivalent default CSS file) */
+
+/* :root contains base variables and styles for the root <html> element */
 :root {
+  /* Keep base font settings */
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* REMOVED: color-scheme and default colors - Let App.css handle these */
+  /* color-scheme: light dark; */
+  /* color: rgba(255, 255, 255, 0.87); */
 
+  /* REMOVED: Default background color - Let App.css body style handle this */
+  /* background-color: #242424; */
+
+  /* Keep font rendering optimizations */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Base link styles (Consider moving to App.css if you want more specific control) */
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: #646cff; /* Default link color */
+  text-decoration: inherit; /* Remove underline by default */
 }
 a:hover {
-  color: #535bf2;
+  color: #535bf2; /* Default link hover color */
 }
 
+/* Base body styles */
 body {
-  margin: 0; /* Keep this */
-  min-width: 320px;  /* Keep if desired */
-  min-height: 100vh; /* Keep this */
-
+  margin: 0; /* CRITICAL: Remove default browser margin */
+  /* REMOVED: display: flex; place-items: center; (Often in templates, conflicts with full page layout) */
+  min-width: 320px;  /* Optional: Keep minimum width for small devices */
+  min-height: 100vh; /* CRITICAL: Ensure body can fill viewport height */
+  /* NO background properties here - let App.css control the body background */
 }
 
+/* Base heading style (Consider moving to App.css for consistency) */
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+/* Base button styles (Most specific styling should be in App.css under .btn, .btn-primary etc.) */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  border-radius: 8px; /* Default border radius */
+  border: 1px solid transparent; /* Default border */
+  padding: 0.6em 1.2em; /* Default padding */
+  font-size: 1em; /* Default font size */
+  font-weight: 500; /* Default font weight */
+  font-family: inherit; /* Use body font by default */
+  /* REMOVED: background-color - Let App.css .btn styles handle this */
+  /* background-color: #1a1a1a; */
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s; /* Keep basic transition if desired */
 }
-button:hover {
+/* REMOVED: Default button hover state - Let App.css handle this */
+/* button:hover {
   border-color: #646cff;
-}
+} */
 button:focus,
 button:focus-visible {
+  /* Keep default focus outline for accessibility */
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* REMOVED: The entire @media block for light mode background/color overrides */
+/*
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -65,3 +83,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+*/
