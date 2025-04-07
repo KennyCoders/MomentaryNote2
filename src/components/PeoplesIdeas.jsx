@@ -1,172 +1,234 @@
 // src/components/PeoplesIdeas.jsx
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient'; // Supabase client (used when not in mock mode)
-import AudioPlayer from './AudioPlayer';     // Audio player component
-import { mockPublicIdeas, mockGetAudioUrl } from '../mockData'; // Mock data and helpers
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../supabaseClient';
+import AudioPlayer from './AudioPlayer';
+// NOTE: No UpvoteIcon component is imported - using emojis
+import { mockPublicIdeas, mockGetAudioUrl, updateMockIdeaVotes } from '../mockData';
 
+// --- localStorage Helper Functions ---
+const VOTED_IDEAS_KEY = 'momentaryNoteUpvotes';
+
+const getVotedIdeas = () => {
+    try {
+        const voted = localStorage.getItem(VOTED_IDEAS_KEY);
+        return voted ? new Set(JSON.parse(voted)) : new Set();
+    } catch (e) { console.error("Error reading voted ideas from localStorage:", e); return new Set(); }
+};
+// Checks if a specific idea ID has been voted on
+const hasVoted = (ideaId) => {
+    // Directly use the getter function for the latest value
+    return getVotedIdeas().has(ideaId);
+};
+// Adds an idea ID to the set of voted ideas in localStorage
+const markAsVoted = (ideaId) => {
+    try {
+        const votedSet = getVotedIdeas();
+        votedSet.add(ideaId);
+        localStorage.setItem(VOTED_IDEAS_KEY, JSON.stringify([...votedSet]));
+    } catch (e) { console.error("Error saving voted idea to localStorage:", e); }
+};
+// --- End localStorage Helpers ---
+
+// Gradient Helper
 const gradientClasses = [
-    'gradient-2',  'gradient-4',
+    'gradient-1', 'gradient-2', 'gradient-3', 'gradient-4', 'gradient-5',
     'gradient-6', 'gradient-7', 'gradient-8', 'gradient-9', 'gradient-10'
 ];
-const getRandomGradientClass = () => {
-    const randomIndex = Math.floor(Math.random() * gradientClasses.length);
-    return gradientClasses[randomIndex];
+const getRandomGradientClass = () => gradientClasses[Math.floor(Math.random() * gradientClasses.length)];
+
+// Sorting Helper (Sorts by upvotes DESC, then creation date DESC)
+const sortIdeas = (ideas) => {
+    if (!Array.isArray(ideas)) { console.warn("sortIdeas received non-array:", ideas); return []; }
+    return [...ideas].sort((a, b) => {
+        const upvotesA = a?.upvotes ?? 0;
+        const upvotesB = b?.upvotes ?? 0;
+        if (upvotesB !== upvotesA) return upvotesB - upvotesA;
+        const dateA = a?.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b?.created_at ? new Date(b.created_at).getTime() : 0;
+        if (isNaN(dateA) || isNaN(dateB)) return 0;
+        return dateB - dateA;
+    });
 };
 
-// Receive isMockMode prop from App.jsx
 function PeoplesIdeas({ isMockMode }) {
-    // State for ideas, loading status, and errors
     const [publicIdeas, setPublicIdeas] = useState([]);
-    // Start loaded if in mock mode, otherwise true to indicate fetching needed
-    const [loadingPublicIdeas, setLoadingPublicIdeas] = useState(!isMockMode);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [upvotingId, setUpvotingId] = useState(null);
+    // State to track local votes, initialized lazily
+    const [localVotes, setLocalVotes] = useState(() => getVotedIdeas());
 
-    // Effect to fetch public ideas (Conditional)
-    useEffect(() => {
-        const fetchPublicIdeas = async () => {
-            // --- MOCK MODE: Load mock data ---
-            if (isMockMode) {
-                console.log("PeoplesIdeas: Running in MOCK MODE. Fetching mock 'People's Ideas'.");
-                // Simulate fetching delay slightly for realism if desired
-                // await new Promise(resolve => setTimeout(resolve, 150));
-                setPublicIdeas(mockPublicIdeas || []); // Use imported mock data or empty array
-                setLoadingPublicIdeas(false);
-                setError(null);
-                return;
-            }
-
-            // --- LIVE MODE: Fetch from Supabase ---
-            console.log("PeoplesIdeas: Running in LIVE MODE. Fetching public ideas from Supabase.");
-            setLoadingPublicIdeas(true);
-            setError(null); // Reset error on new fetch
-            try {
-                // Optional: Call DB function to update expired ideas *before* fetching public ones
-                // This should ideally be a scheduled task, but can be called here if needed.
-                // console.log("Checking for expired ideas...");
-                // const { error: rpcError } = await supabase.rpc('check_and_update_expired_ideas');
-                // if (rpcError) {
-                //    console.warn("Warning: Error checking/updating expired ideas:", rpcError.message);
-                //    // Decide if this should be a fatal error or just a warning
-                // } else {
-                //    console.log("Expired idea check complete.");
-                // }
-
-                // Fetch ideas marked as public
-                const { data, error: fetchError } = await supabase
-                    .from('ideas')
-                    .select('id, created_at, description, file_path, original_filename') // Select only needed fields
-                    .eq('is_public', true) // Filter for public ideas ONLY
-                    // Optional filtering: Add .lt('expires_at', new Date().toISOString()) if needed,
-                    // but the `is_public` flag should be the primary indicator.
-                    .order('created_at', { ascending: false }); // Show newest first
-
-                if (fetchError) throw fetchError; // Throw error to be caught below
-
-                setPublicIdeas(data || []); // Set fetched data or empty array
-
-            } catch (err) {
-                console.error('Error fetching public ideas:', err.message);
-                setError(`Failed to load ideas: ${err.message}`); // Set error message for display
-                setPublicIdeas([]); // Clear ideas on error
-            } finally {
-                setLoadingPublicIdeas(false); // Stop loading indicator
-            }
-        };
-
-        fetchPublicIdeas();
-        // Optional: Set up a timer to refetch periodically?
-        // const intervalId = setInterval(fetchPublicIdeas, 60000); // Refetch every 60 seconds
-        // return () => clearInterval(intervalId); // Cleanup interval on unmount
-
-    }, [isMockMode]); // Re-run effect if the mode changes
-
-
-     // --- Get Public URL for Audio (Conditional Helper) ---
-     const getAudioUrl = (filePath) => {
-        // --- MOCK MODE: Use mock URL getter ---
+    // Fetch public ideas function (selects upvotes and bpm)
+    const fetchPublicIdeas = useCallback(async () => {
+        setError(null);
+        setLoading(true);
         if (isMockMode) {
-            return mockGetAudioUrl(filePath); // Use the imported mock function
+            console.log("PeoplesIdeas: Running in MOCK MODE.");
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                // Ensure we use the potentially updated mockPublicIdeas
+                const currentMockIdeas = mockPublicIdeas || [];
+                setPublicIdeas(sortIdeas(currentMockIdeas));
+            } catch(mockError) { setError("Failed to load mock ideas."); setPublicIdeas([]); }
+            finally { setLoading(false); }
+            return;
+        }
+        console.log("PeoplesIdeas: Running in LIVE MODE.");
+        try {
+            const now = new Date().toISOString();
+            const { data, error: dbError } = await supabase
+                .from('ideas')
+                // Select bpm along with other fields
+                .select('id, description, file_path, original_filename, created_at, is_public, expires_at, upvotes, bpm')
+                .or(`is_public.eq.true,expires_at.lte.${now}`)
+                .order('upvotes', { ascending: false, nullsFirst: false })
+                .order('created_at', { ascending: false });
+            if (dbError) throw dbError;
+            setPublicIdeas(sortIdeas(data || []));
+        } catch (err) { setError(`Failed to load ideas: ${err.message}`); setPublicIdeas([]); }
+        finally { setLoading(false); }
+    }, [isMockMode]);
+
+    useEffect(() => { fetchPublicIdeas(); }, [fetchPublicIdeas]);
+
+    // Listener for storage changes
+    useEffect(() => {
+        const handleStorageChange = (event) => { if (event.key === VOTED_IDEAS_KEY) setLocalVotes(getVotedIdeas()); };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
+    // Handle Upvote (with localStorage check and optimistic UI)
+    const handleUpvote = async (ideaId, currentUpvotes) => {
+        // Use state for the check within the handler
+        if (localVotes.has(ideaId)) {
+             console.log(`Already voted for idea ${ideaId} in this browser.`);
+             return; // Already voted check
+        }
+        if (upvotingId === ideaId) return; // Prevent double click
+
+        setUpvotingId(ideaId);
+        setError(null);
+        const numericCurrentUpvotes = currentUpvotes ?? 0;
+
+        // Optimistic UI Update
+        const optimisticallyUpdatedIdeas = publicIdeas.map(idea =>
+            idea.id === ideaId ? { ...idea, upvotes: numericCurrentUpvotes + 1 } : idea
+        );
+        setPublicIdeas(sortIdeas(optimisticallyUpdatedIdeas));
+
+        // MOCK MODE
+        if (isMockMode) {
+            console.log(`PeoplesIdeas: MOCK MODE. Upvoted idea ${ideaId}.`);
+            try {
+                await new Promise(resolve => setTimeout(resolve, 200));
+                updateMockIdeaVotes(ideaId, numericCurrentUpvotes + 1); // Update central mock data
+                markAsVoted(ideaId); // Mark in localStorage
+                setLocalVotes(prevVotes => new Set(prevVotes).add(ideaId)); // Update state
+            } catch (mockError) { /* Rollback logic could be added here if needed */ setError("Mock vote failed.");}
+            finally { setUpvotingId(null); }
+            return;
         }
 
-        // --- LIVE MODE: Get URL from Supabase Storage ---
-        if (!filePath) return null; // No path, no URL
+        // LIVE MODE
+        console.log(`PeoplesIdeas: LIVE MODE. Upvoting idea ${ideaId}.`);
         try {
-            const { data } = supabase.storage
-                .from('ideas-audio') // Ensure bucket name is correct
-                .getPublicUrl(filePath);
-            // Check if data and publicUrl exist
-            if (data?.publicUrl) {
-                return data.publicUrl;
-            } else {
-                console.warn(`Could not retrieve public URL for path: ${filePath}`);
-                return null;
+            const { error: updateError } = await supabase
+                .from('ideas')
+                .update({ upvotes: numericCurrentUpvotes + 1 })
+                .eq('id', ideaId);
+
+            if (updateError) {
+                 // Handle potential deletion during vote attempt
+                 if (updateError.code === 'PGRST116') { // Example error code, check actual Supabase errors
+                     console.warn(`Idea ${ideaId} might have been deleted.`);
+                     setError(`Could not vote, the idea may no longer exist.`);
+                     setPublicIdeas(prevIdeas => sortIdeas(prevIdeas.filter(idea => idea.id !== ideaId))); // Remove locally
+                 } else throw updateError;
+             } else {
+                 console.log(`Successfully upvoted idea ${ideaId}`);
+                 markAsVoted(ideaId); // Mark in localStorage
+                 setLocalVotes(prevVotes => new Set(prevVotes).add(ideaId)); // Update state
             }
-        } catch (fetchError) {
-            console.error(`Error getting public URL for ${filePath}:`, fetchError);
-            return null; // Return null on error
+        } catch (err) {
+            console.error(`Error upvoting idea ${ideaId}:`, err.message);
+            setError(`Failed to upvote idea. Please try again.`);
+            // Rollback optimistic update
+            const revertedIdeas = publicIdeas.map(idea =>
+                idea.id === ideaId ? { ...idea, upvotes: numericCurrentUpvotes } : idea
+            );
+            setPublicIdeas(sortIdeas(revertedIdeas));
+        } finally {
+            setUpvotingId(null);
         }
     };
 
+    // Get Audio URL
+     const getAudioUrl = (filePath) => {
+        if (isMockMode) return mockGetAudioUrl(filePath);
+        if (!filePath) return null;
+        try {
+            const { data } = supabase.storage.from('ideas-audio').getPublicUrl(filePath);
+            return data?.publicUrl || null;
+        } catch (error) { console.error(`Error getting public URL for ${filePath}:`, error); return null; }
+    };
 
     // --- Render Logic ---
     return (
         <div className="peoples-ideas-container">
-            {/* Section Header (Centered via CSS) */}
-            <h2 className="section-subtitle">
-                Shared{' '} {/* This is plain text */}
-                <span className="subtitle-char">N</span><span className="subtitle-char">o</span><span className="subtitle-char">t</span><span className="subtitle-char">e</span><span className="subtitle-char">s</span>
+            {error && <div className="feedback-area list-feedback"><p className="error-message">{error}</p></div>}
+            {loading ? <div className="loading-container">Loading shared ideas...</div>
+             : publicIdeas.length === 0 && !error ? <p style={{ textAlign: 'center' }}>No public ideas found yet.</p>
+             : (
+                <div className="ideas-grid">
+                    {publicIdeas.map((idea) => {
+                        if (!idea || !idea.id) return null; // Defensive check
 
-            </h2>
-            <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--dark-gray)' }}>
-                These are musical ideas shared publicly by other users.
-            </p>
+                        const gradientClass = getRandomGradientClass();
+                        const isProcessing = upvotingId === idea.id;
+                        // Use state for rendering check
+                        const alreadyVoted = localVotes.has(idea.id);
+                        const voteCount = idea.upvotes ?? 0;
 
-            {/* Display Loading State */}
-            {loadingPublicIdeas && (
-                <div className="loading-container">Loading public ideas...</div> // Use loading class
-            )}
-
-            {/* Display Error State */}
-            {error && (
-                <div className="feedback-area list-feedback">
-                    <p className="error-message">Error: {error}</p>
-                 </div>
-            )}
-
-             {/* Display Ideas Grid if not loading and no error */}
-            {!loadingPublicIdeas && !error && (
-                 publicIdeas.length === 0 ? (
-                    // Message when no public ideas are available
-                    <p style={{ textAlign: 'center' }}>No public ideas available right now. Check back later!</p>
-                ) : (
-                    // Grid for displaying idea boxes (CSS controls columns and centering)
-                    <div className="ideas-grid">
-                        {publicIdeas.map((idea) => {
-                            // Assign a random gradient class for each card
-                            const gradientClass = getRandomGradientClass(); // Make sure this function is defined above
-                            return (
-                                // Apply the dynamic gradient class to the idea box
-                                <div key={idea.id} className={`idea-box ${gradientClass}`}>
-                                    {/* Display Name */}
+                        return (
+                            <div key={idea.id} className={`idea-box ${gradientClass}`}>
+                                {/* Header includes filename and BPM */}
+                                <div className="idea-header-info">
                                     <p className="idea-filename">Name: {idea.original_filename || 'Unknown Filename'}</p>
-
-                                    {/* Display Description if it exists */}
-                                    {idea.description && <p className="idea-description">{idea.description}</p>}
-
-                                    {/* Display Date Shared */}
-                                    <p className="idea-dates">
-                                        Shared: {new Date(idea.created_at).toLocaleDateString()}
-                                    </p>
-
-                                    {/* Audio Player Component */}
-                                    <AudioPlayer fileUrl={getAudioUrl(idea.file_path)} />
-
-                                    {/* No remove button for public ideas */}
+                                    {/* Conditionally render BPM */}
+                                    {idea.bpm !== null && idea.bpm !== undefined && (
+                                        <p className="idea-bpm">BPM: {idea.bpm}</p>
+                                    )}
                                 </div>
-                            );
-                        })}
-                    </div>
-                )
+                                {/* Description & Player */}
+                                {idea.description && <p className="idea-description">{idea.description}</p>}
+                                <AudioPlayer fileUrl={getAudioUrl(idea.file_path)} />
+                                {/* Footer includes date and upvote section */}
+                                <div className="idea-footer">
+                                     <p className="idea-dates">
+                                         Shared: {idea.created_at ? new Date(idea.created_at).toLocaleDateString() : 'Date Unknown'}
+                                     </p>
+                                     <div className="upvote-section">
+                                         <button
+                                             onClick={() => handleUpvote(idea.id, voteCount)}
+                                             // Class name for emoji button styling
+                                             className={`upvote-button ${isProcessing ? 'processing' : ''} ${alreadyVoted ? 'voted' : ''}`}
+                                             disabled={isProcessing || alreadyVoted}
+                                             aria-label={alreadyVoted ? `You have upvoted ${idea.original_filename || idea.id}` : `Upvote idea ${idea.original_filename || idea.id}`}
+                                             title={alreadyVoted ? "Already upvoted" : "Upvote"}
+                                         >
+                                             {/* Displaying your chosen Emojis */}
+                                             {alreadyVoted ? '✔️' : '❤️'}
+                                         </button>
+                                         <span className="upvote-count" aria-live="polite">
+                                             {voteCount}
+                                         </span>
+                                     </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             )}
         </div>
     );

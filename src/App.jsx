@@ -15,7 +15,7 @@ import './App.css'; // Main application styles
 
 // Helper to determine if we are running in mock mode
 // Defaults to false (live mode) unless VITE_USE_MOCK_DATA is explicitly 'true'
-const isMockMode = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+const isMockMode = import.meta.env.VITE_USE_MOCK_DATA === 'false';
 
 function App() {
     // State

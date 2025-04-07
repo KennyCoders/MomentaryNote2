@@ -2,15 +2,15 @@
 
 /* --- Global Styles & Variables --- */
 :root {
-  --primary-color: #007bff; /* Or your chosen Teal/Blue */
-  --primary-hover-color: #0056b3; /* Darker version */
-  --secondary-color: #6c757d; /* Default gray */
-  --secondary-hover-color: #5a6268; /* Darker gray */
-  --danger-color: #dc3545; /* Example danger color - red */
+  --primary-color: #007bff;
+  --primary-hover-color: #0056b3;
+  --secondary-color: #6c757d;
+  --secondary-hover-color: #5a6268;
+  --danger-color: #dc3545;
   --danger-hover-color: #c82333;
   --light-gray: #f8f9fa;
-  --medium-gray: #e9ecef; /* Used for disabled background */
-  --dark-gray: #6c757d;    /* Used for disabled text */
+  --medium-gray: #e9ecef;
+  --dark-gray: #6c757d;
   --text-color: #333;
   --border-color: #dee2e6;
   --box-shadow-light: 0 2px 5px rgba(0, 0, 0, 0.07);
@@ -23,7 +23,7 @@
   --border-color-stronger: #bbb;
   --box-shadow-card: 0 3px 8px rgba(0, 0, 0, 0.09);
 
-  /* Gradients for Titles */
+  /* Gradients */
   --sub-gradient-1: linear-gradient(45deg, #2193b0, #6dd5ed);
   --sub-gradient-2: linear-gradient(45deg, #6a11cb, #b76dd1);
   --sub-gradient-3: linear-gradient(45deg, #cc5333, #f5af19);
@@ -33,10 +33,6 @@
   --main-gradient-2: linear-gradient(45deg, #fc5c7d, #6a82fb);
   --main-gradient-3: linear-gradient(45deg, #4facfe, #00f2fe);
   --main-gradient-4: linear-gradient(45deg, #6a11cb, #2575fc);
-
-  /* RGB version for focus */
-  /* --rgb-primary-color: 0, 123, 255; */
-  /* --rgb-purple-color: 90, 14, 171; */
 }
 
 /* --- Base Body/HTML --- */
@@ -58,27 +54,17 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 .header-content { padding: 0 1rem; display: flex; justify-content: flex-end; align-items: center; min-height: 3rem; }
 .user-actions { display: flex; align-items: center; gap: 0.8rem; }
 .user-actions span { color: white; font-weight: 500; margin-right: 0.5rem; white-space: nowrap; }
-.user-actions button {
-  padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 6px; cursor: pointer;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; border: none; line-height: 1.4;
-}
+.user-actions button { padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; border: none; line-height: 1.4; }
 .user-actions .btn-login { background-color: var(--primary-color); color: white; }
 .user-actions .btn-login:hover { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-light); }
 .user-actions .btn-logout { background-color: var(--secondary-color); color: white; }
 .user-actions .btn-logout:hover { background-color: var(--secondary-hover-color); box-shadow: var(--box-shadow-light); }
 
 /* --- Main App Container --- */
-.app-container {
-  max-width: var(--page-max-width); margin: 0 auto;
-  padding: 1.5rem 1rem 1rem 1rem; /* Original top padding */
-  display: flex; flex-direction: column; flex-grow: 1;
-}
+.app-container { max-width: var(--page-max-width); margin: 0 auto; padding: 1.5rem 1rem 1rem 1rem; display: flex; flex-direction: column; flex-grow: 1; }
 
 /* --- Main Title --- */
-.main-title {
-  text-align: center; font-size: 3.5rem; font-weight: 600;
-  margin-top: 0.5rem; margin-bottom: 2rem; /* Original bottom margin */ color: var(--text-color);
-}
+.main-title { text-align: center; font-size: 3.5rem; font-weight: 600; margin-top: 0.5rem; margin-bottom: 2rem; color: var(--text-color); }
 .main-title .title-char { display: inline-block; -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: inherit; }
 .main-title .title-char:nth-of-type(1) { background-image: var(--main-gradient-1); }
 .main-title .title-char:nth-of-type(2) { background-image: var(--main-gradient-2); }
@@ -86,43 +72,19 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 .main-title .title-char:nth-of-type(4) { background-image: var(--main-gradient-4); }
 
 /* --- Tab Navigation --- */
-.tabs {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0rem; /* Adjust or remove as necessary */
-  gap: 0;
-  position: relative;
-}
-
-.tabs::after {
-  content: '';
-  position: absolute;
-  left: 5%; /* 5% of the parent width */
-  right: 5%; /* 5% of the parent width */
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent 0%, var(--medium-gray) 50%, transparent 100%);
-}
-
-.tab-button {
-  padding: 1rem 2.5rem; /* Original padding */ border: none; background-color: transparent;
-  cursor: pointer; font-size: 1.2rem; /* Original font size */ color: var(--secondary-color);
-  border-bottom: 4px solid transparent; transition: color 0.3s ease; position: relative;
-  z-index: 1; margin-bottom: -1px; white-space: nowrap;
-}
+.tabs { display: flex; justify-content: center; margin-bottom: 0rem; gap: 0; position: relative; }
+.tabs::after { content: ''; position: absolute; left: 5%; right: 5%; bottom: 0; height: 1px; background: linear-gradient(to right, transparent 0%, var(--medium-gray) 50%, transparent 100%); }
+.tab-button { padding: 1rem 2.5rem; border: none; background-color: transparent; cursor: pointer; font-size: 1.2rem; color: var(--secondary-color); border-bottom: 4px solid transparent; transition: color 0.3s ease; position: relative; z-index: 1; margin-bottom: -1px; white-space: nowrap; }
 .tab-button:hover:not(:disabled) { color: var(--primary-hover-color); }
 .tab-button.active { color: var(--primary-color); font-weight: 600; }
 .tab-button:disabled, .tab-button.disabled { color: var(--medium-gray); cursor: not-allowed; opacity: 0.6; }
 .tab-slider { position: absolute; bottom: -1px; height: 4px; background-color: var(--primary-color); border-radius: 2px; transition: left 0.3s ease-in-out, width 0.3s ease-in-out; z-index: 2; }
 
 /* --- Main Content Area --- */
-.content-area { padding: 1rem 0; /* Original padding */ flex-grow: 1; }
+.content-area { padding: 1rem 0; flex-grow: 1; }
 
 /* --- General Content Sections --- */
-.my-ideas-container,
-.peoples-ideas-container {
-  padding: 1rem 0; /* Original padding */
-}
+.my-ideas-container, .peoples-ideas-container { padding: 1rem 0; }
 
 /* --- Peoples Ideas Section Title --- */
 .peoples-ideas-container .section-subtitle { text-align: center; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem; color: var(--text-color); }
@@ -135,11 +97,7 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 .peoples-ideas-container p[style*="text-align: center"] { margin-top: 0; margin-bottom: 1.5rem; }
 
 /* --- Upload Form Section --- */
-.upload-section {
-  background-color: #fff; padding: 2rem; /* Original padding */ border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow-light); margin-bottom: 2rem; /* Original margin */ max-width: 550px;
-  margin-left: auto; margin-right: auto;
-}
+.upload-section { background-color: #fff; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--box-shadow-light); margin-bottom: 2rem; max-width: 550px; margin-left: auto; margin-right: auto; }
 .upload-section .upload-section-title { margin-bottom: 1.5rem; text-align: center; font-weight: 600; color: var(--text-color); font-size: 1.8rem; }
 .upload-section .upload-section-title .upload-title-char { display: inline-block; -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: inherit; }
 .upload-section-title .upload-title-char:nth-of-type(1) { background-image: var(--sub-gradient-3); }
@@ -148,66 +106,29 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 .upload-section-title .upload-title-char:nth-of-type(4) { background-image: var(--sub-gradient-4); }
 
 /* --- Upload Form Elements --- */
-.upload-form .form-group { margin-bottom: 1.25rem; /* Original spacing */ }
-.upload-form label { display: block; margin-bottom: 0.4rem; font-weight: 500; color: var(--dark-gray); font-size: 0.95rem; /* Original size */ }
-
-/* --- File Input Section --- */
-.form-group.file-upload-group { margin-bottom: 1.25rem; }
+.upload-form .form-group { margin-bottom: 1.25rem; }
+.upload-form label { display: block; margin-bottom: 0.4rem; font-weight: 500; color: var(--dark-gray); font-size: 0.95rem; }
 .form-group.file-upload-group > label:first-of-type { margin-bottom: 0.4rem; }
 .file-input-container { display: flex; align-items: center; gap: 0.8rem; width: 100%; }
-
-/* Style ONLY the "Select File" label/button with PURPLE */
-.form-group.file-upload-group label.file-upload-button {
-    display: inline-block; padding: 0.5rem 1rem; margin-bottom: 0;
-    margin-right: 0.8rem; border-radius: 6px; cursor: pointer; text-align: center;
-    font-size: 0.9rem; line-height: 1.4; border: none;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; font-weight: 500;
-    white-space: nowrap; flex-shrink: 0;
-    background-color: #5a0eab; /* Purple */ color: white; background-image: none;
-}
+.form-group.file-upload-group label.file-upload-button { display: inline-block; padding: 0.5rem 1rem; margin-bottom: 0; margin-right: 0.8rem; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.9rem; line-height: 1.4; border: none; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; font-weight: 500; white-space: nowrap; flex-shrink: 0; background-color: #5a0eab; color: white; background-image: none; }
 .form-group.file-upload-group label.file-upload-button:hover { background-color: #490b8a; box-shadow: var(--box-shadow-light); opacity: 1; }
-
-.file-name-display {
-    flex-grow: 1; font-size: 0.9rem; color: var(--dark-gray); background-color: var(--light-gray);
-    padding: 0.5rem 0.8rem; border: 1px solid var(--border-color); border-radius: 6px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4;
-}
+.file-name-display { flex-grow: 1; font-size: 0.9rem; color: var(--dark-gray); background-color: var(--light-gray); padding: 0.5rem 0.8rem; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
 .file-name-display span.placeholder { color: var(--secondary-color); font-style: italic; }
-
 .visually-hidden-file-input { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; white-space: nowrap; }
 .visually-hidden-file-input:focus + .file-input-container .file-upload-button { outline: 2px solid var(--primary-color); outline-offset: 3px; }
-/* --- End File Input Section --- */
 
-/* --- Textarea and Select --- */
-.upload-form textarea, .upload-form select {
-  width: 100%; padding: 0.7rem 0.9rem; border: 1px solid var(--border-color);
-  border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff;
-  color: var(--text-color); line-height: 1.5;
-}
-.upload-form textarea { resize: vertical; min-height: 80px; /* Original height */ }
-.upload-form select {
-    appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236c757d%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-    background-repeat: no-repeat; background-position: right 0.9rem center;
-    background-size: 0.65em auto; padding-right: 2.5rem;
-}
+/* --- Textarea, Select, BPM Input --- */
+.upload-form textarea, .upload-form select, .upload-form input[type="number"].bpm-input { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; color: var(--text-color); line-height: 1.5; }
+.upload-form textarea { resize: vertical; min-height: 80px; }
+.upload-form select { appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236c757d%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 0.9rem center; background-size: 0.65em auto; padding-right: 2.5rem; }
+.upload-form input[type="number"].bpm-input { max-width: 150px; }
+.upload-form textarea:focus, .upload-form select:focus, .upload-form input[type="number"].bpm-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
 
-/* Focus Styles */
-.upload-form textarea:focus, .upload-form select:focus {
-  outline: none; border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(var(--rgb-primary-color, 0, 123, 255), 0.25);
-}
-
-/* --- Main Submit Button ("Add Note") --- */
-.upload-form button[type="submit"].btn-primary {
-  width: 100%; padding: 0.8rem 1.2rem; /* Original padding */ font-size: 1rem; /* Original size */
-  margin-top: 0.5rem; background-color: var(--primary-color); color: white;
-}
+/* --- Submit Button --- */
+.upload-form button[type="submit"].btn-primary { width: 100%; padding: 0.8rem 1.2rem; font-size: 1rem; margin-top: 0.5rem; background-color: var(--primary-color); color: white; }
 .upload-form button[type="submit"].btn-primary:hover:not(:disabled) { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-light); }
 
-
-/* --- General Button Base Styles --- */
+/* --- General Button Styles --- */
 .btn { display: inline-block; padding: 0.6rem 1.2rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 500; text-align: center; text-decoration: none; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; line-height: 1.4; }
 .btn-primary { background-color: var(--primary-color); color: white; }
 .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-light); }
@@ -216,47 +137,21 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 .btn-danger { background-color: var(--danger-color); color: white; }
 .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover-color); box-shadow: var(--box-shadow-light); }
 
-/* --- !!! ADDED/VERIFIED DISABLED BUTTON STYLES !!! --- */
-button:disabled,
-.btn:disabled {
-  background-color: var(--medium-gray) !important; /* Use !important ONLY if absolutely necessary for testing */
-  color: var(--dark-gray) !important;            /* Use !important ONLY if absolutely necessary for testing */
-  cursor: not-allowed;
-  box-shadow: none;
-  opacity: 0.65;
-}
-
-/* Specific styling for the primary submit button when disabled */
-.upload-form button[type="submit"].btn-primary:disabled {
-  background-color: var(--medium-gray); /* Explicitly override */
-  color: var(--dark-gray);            /* Explicitly override */
-  opacity: 0.65;
-  /* Ensure hover styles don't apply */
-  box-shadow: none;
-}
-/* --- !!! END DISABLED BUTTON STYLES !!! --- */
-
+/* --- Disabled Button Styles --- */
+button:disabled, .btn:disabled { background-color: var(--medium-gray); color: var(--dark-gray); cursor: not-allowed; box-shadow: none; opacity: 0.65; }
+.upload-form button[type="submit"].btn-primary:disabled { background-color: var(--medium-gray); color: var(--dark-gray); opacity: 0.65; box-shadow: none; }
 
 /* --- Idea List Section --- */
-.ideas-list-section { margin-top: 2rem; /* Original margin */ }
+.ideas-list-section { margin-top: 2rem; }
 .ideas-list-section h2 { text-align: center; margin-bottom: 1.5rem; font-weight: 600; }
 
-/* --- Grid Layout for Ideas --- */
-.ideas-grid { display: grid; gap: 1.8rem; /* Original gap */ }
-/* Default grid columns */
-.my-ideas-container .ideas-grid, .peoples-ideas-container .ideas-grid {
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Original min */
-}
+/* --- Grid Layout --- */
+.ideas-grid { display: grid; gap: 1.8rem; }
+.my-ideas-container .ideas-grid, .peoples-ideas-container .ideas-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 
-/* --- Idea Box Styling --- */
-.idea-box {
-  border: 1px solid var(--border-color-stronger); padding: 1.5rem; /* Original padding */ border-radius: 10px;
-  box-shadow: var(--box-shadow-card); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  display: flex; flex-direction: column; min-height: 220px; /* Original height */ font-family: var(--font-family-cards);
-  overflow: hidden; position: relative; color: #454545;
-}
-.idea-box:hover { transform: translateY(-5px); /* Original lift */ box-shadow: var(--box-shadow-hover); }
-/* Gradient Backgrounds for Idea Boxes */
+/* --- Idea Box --- */
+.idea-box { border: 1px solid var(--border-color-stronger); padding: 1.5rem; border-radius: 10px; box-shadow: var(--box-shadow-card); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; display: flex; flex-direction: column; min-height: 220px; font-family: var(--font-family-cards); overflow: hidden; position: relative; color: #454545; justify-content: space-between; }
+.idea-box:hover { transform: translateY(-5px); box-shadow: var(--box-shadow-hover); }
 .idea-box.gradient-1 { background: linear-gradient(135deg, #fffdd0 0%, #fffaf0 100%); }
 .idea-box.gradient-2 { background: linear-gradient(135deg, #fffacd 0%, #fff8dc 100%); }
 .idea-box.gradient-3 { background: linear-gradient(135deg, #fff8e1 0%, #fffacd 100%); }
@@ -268,79 +163,106 @@ button:disabled,
 .idea-box.gradient-9 { background: linear-gradient(135deg, #fffacd 0%, #ffe4c4 100%); }
 .idea-box.gradient-10 { background: linear-gradient(135deg, #fffaf0 0%, #f0e68c 100%); }
 
-.idea-box p { margin-top: 0; margin-bottom: 0.6rem; /* Original margin */ word-break: break-word; }
-.idea-box p:last-of-type { margin-bottom: 0.8rem; }
-.idea-box .idea-filename { font-weight: 600; color: #333; font-size: 1.1rem; /* Original size */ margin-bottom: 0.5rem; }
-.idea-box .idea-description { font-style: normal; color: #555; font-size: 0.95rem; /* Original size */ flex-grow: 1; margin-bottom: 1rem; line-height: 1.5; }
-.idea-box .idea-dates { font-size: 0.8rem; /* Original size */ color: #666; line-height: 1.4; margin-top: 0.8rem; margin-bottom: 0; text-align: left; font-weight: 500; order: 10; }
+.idea-box p { margin-top: 0; margin-bottom: 0.6rem; word-break: break-word; }
+.idea-box p:last-of-type { margin-bottom: 0; }
 
+/* Idea Box Header (Filename & BPM) */
+.idea-header-info { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.idea-box .idea-filename { font-weight: 600; color: #333; font-size: 1.1rem; margin-bottom: 0; flex-grow: 1; }
+.idea-box .idea-bpm {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #333; /* Changed from #777 to #333 */
+  background-color: transparent; /* Removed the background */
+  padding: 2px 6px; /* Keep padding for spacing */
+  border-radius: 4px;
+  margin-bottom: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}.idea-box .idea-description { font-style: normal; color: #555; font-size: 0.95rem; flex-grow: 1; margin-bottom: 1rem; line-height: 1.5; }
+
+/* Audio Player */
 .idea-box audio, .idea-box .audio-player-container { width: 100%; margin-top: 0.5rem; margin-bottom: 0.75rem; }
-.idea-box .remove-button.btn-danger { background-color: var(--danger-color); color: white; margin-top: auto; align-self: flex-start; padding: 0.4rem 0.8rem; /* Original padding */ font-size: 0.85rem; }
+
+/* Remove Button (MyIdeas only) */
+.idea-box .remove-button.btn-danger { background-color: var(--danger-color); color: white; margin-top: 1rem; align-self: flex-start; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
 .idea-box .remove-button.btn-danger:hover:not(:disabled) { background-color: var(--danger-hover-color); box-shadow: var(--box-shadow-light); }
 
+/* --- Idea Box Footer (Upvotes & Dates) --- */
+.idea-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(0, 0, 0, 0.1); font-size: 0.8em; color: #555; flex-shrink: 0; }
+.idea-footer .idea-dates { margin: 0; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 5px; }
+.upvote-section { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* --- Upvote Button (Emoji Version) --- */
+.upvote-button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  /* Adjust padding slightly if needed, or remove if you want zero space */
+  padding: 1px 2px; /* Reduced padding */
+  font-size: 1.1em;
+  line-height: 1;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  transition: transform 0.15s ease-in-out, opacity 0.2s ease, background-color 0.1s ease; /* Added background transition */
+}
+
+.upvote-button:hover:not(:disabled) { transform: scale(1.15); background-color: rgba(0, 0, 0, 0.05); }
+.upvote-button:disabled { cursor: not-allowed; opacity: 0.6; }
+.upvote-button.processing { opacity: 0.5; animation: pulse 1s infinite; }
+
+.upvote-button.voted {
+  opacity: 0.9;
+  cursor: default;
+  background-color: transparent !important; /* Explicitly ensure no background */
+}
+
+.upvote-button.voted:hover {
+  transform: none; /* Already had this */
+  background-color: transparent !important; /* Reinforce transparency on hover */
+}
+.upvote-count { font-weight: 600; min-width: 1.7em; text-align: right; font-variant-numeric: tabular-nums; color: inherit; line-height: normal; padding-left: 2px; vertical-align: middle; }
+
+/* --- Gradient Specific Colors (!!! ADJUST THESE !!!) --- */
+/* You MUST adjust footer/bpm colors based on YOUR gradients for readability */
+.gradient-1 .idea-footer, .gradient-1 .idea-bpm { color: #444; border-top-color: rgba(0, 0, 0, 0.1); }
+.gradient-1 .idea-bpm { background-color: rgba(0, 0, 0, 0.05); }
+/* .gradient-1 .upvote-button { color: #555; } */ /* Optional emoji color override */
+
+.gradient-4 .idea-footer, .gradient-4 .idea-bpm { color: #50402a; border-top-color: rgba(0, 0, 0, 0.12); }
+.gradient-4 .idea-bpm { background-color: rgba(0, 0, 0, 0.06); }
+
+/* Add rules for YOUR gradients 2, 3, 5, 6, 7, 8, 9, 10 here */
+/* ... */
+
 /* --- Feedback Messages --- */
-.feedback-area { margin-top: 1rem; /* Original margin */ text-align: center; min-height: 1.5em; font-size: 0.9rem; }
+.feedback-area { margin-top: 1rem; text-align: center; min-height: 1.5em; font-size: 0.9rem; }
 .form-feedback { margin-top: 1.25rem; }
 .list-feedback { margin-bottom: 1rem; }
 .error-message { color: var(--danger-color); font-weight: 500; }
 .info-message { color: var(--primary-color); font-weight: 500; }
 
 /* --- Separators --- */
-/* Using the sleek separator with original-like margins */
-.sleek-separator {
-  height: 1px; border: none; width: 90%; max-width: 700px;
-  margin: 2rem auto; /* Original vertical margin for HR */
-  background: linear-gradient(to right, transparent 0%, var(--medium-gray) 50%, transparent 100%);
-}
+.sleek-separator { height: 1px; border: none; width: 90%; max-width: 700px; margin: 2rem auto; background: linear-gradient(to right, transparent 0%, var(--medium-gray) 50%, transparent 100%); }
 
 /* --- Loading State --- */
-.loading-container { display: flex; justify-content: center; align-items: center; min-height: 200px; /* Original height */ font-size: 1.2rem; color: var(--dark-gray); }
+.loading-container { display: flex; justify-content: center; align-items: center; min-height: 200px; font-size: 1.2rem; color: var(--dark-gray); }
 
-/* --- Login Prompt Styling --- */
-.login-prompt { text-align: center; padding: 3rem 1rem; /* Original padding */ margin-top: 2rem; color: var(--dark-gray); background-color: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--box-shadow-light); }
-.login-prompt p { font-size: 1.1rem; /* Original size */ line-height: 1.7; margin: 0; }
+/* --- Login Prompt --- */
+.login-prompt { text-align: center; padding: 3rem 1rem; margin-top: 2rem; color: var(--dark-gray); background-color: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--box-shadow-light); }
+.login-prompt p { font-size: 1.1rem; line-height: 1.7; margin: 0; }
 .link-button { background: none; border: none; padding: 0; margin: 0; color: var(--primary-color); text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; font-weight: 600; vertical-align: baseline; }
 .link-button:hover { color: var(--primary-hover-color); text-decoration: none; }
 
-/* --- Optional Styling for Logged-Out Tab --- */
-.tab-button.logged-out-view:not(.active) { opacity: 0.7; }
+/* --- Keyframes --- */
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-/* --- Responsive Breakpoints (Original structure) --- */
-/* Desktop Grid for People's Ideas */
-@media (min-width: 992px) {
-  .peoples-ideas-container .ideas-grid {
-      grid-template-columns: repeat(2, 1fr);
-      max-width: 900px; margin-left: auto; margin-right: auto;
-  }
-  /* My ideas grid remains auto-fill unless uncommented */
-  /* .my-ideas-container .ideas-grid { grid-template-columns: repeat(3, 1fr); } */
-}
-
-/* Tablet Breakpoint */
-@media (max-width: 991px) {
-     .ideas-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-     .peoples-ideas-container .ideas-grid { max-width: none; margin-left: 0; margin-right: 0; }
-}
-
-@media (max-width: 768px) {
-  :root { --base-font-size: 15px; }
-  .app-container { padding: 1.5rem 0.75rem 1rem 0.75rem; }
-  .main-title { font-size: 2rem; margin-bottom: 1.5rem; }
-  .tab-button { padding: 0.8rem 1.5rem; font-size: 1.1rem; }
-  .upload-section { max-width: 90%; padding: 1.5rem; }
-  .idea-box { padding: 1rem; }
-}
-
-/* Phone Breakpoint */
-@media (max-width: 480px) {
-  .upload-section { max-width: 100%; padding: 1rem; }
-  .main-title { font-size: 1.8rem; }
-  .tab-button { padding: 0.6rem 1rem; font-size: 1rem; }
-  .ideas-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .peoples-ideas-container .ideas-grid { grid-template-columns: 1fr; }
-   .user-actions span { display: none; }
-   /* File input stacking for phone */
-   .file-input-container { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-   .file-upload-button.btn-secondary { width: 100%; text-align: center; box-sizing: border-box; line-height: 1.4; }
-   .file-name-display { width: 100%; box-sizing: border-box; margin-top: 0; text-align: center; padding: 0.5rem 0.8rem; }
-}
+/* --- Responsive --- */
+@media (min-width: 992px) { .peoples-ideas-container .ideas-grid { grid-template-columns: repeat(2, 1fr); max-width: 900px; margin-left: auto; margin-right: auto; } }
+@media (max-width: 991px) { .ideas-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; } .peoples-ideas-container .ideas-grid { max-width: none; margin-left: 0; margin-right: 0; } }
+@media (max-width: 768px) { :root { --base-font-size: 15px; } .app-container { padding: 1.5rem 0.75rem 1rem 0.75rem; } .main-title { font-size: 2rem; margin-bottom: 1.5rem; } .tab-button { padding: 0.8rem 1.5rem; font-size: 1.1rem; } .upload-section { max-width: 90%; padding: 1.5rem; } .idea-box { padding: 1rem; min-height: 200px; } }
+@media (max-width: 480px) { .upload-section { max-width: 100%; padding: 1rem; } .main-title { font-size: 1.8rem; } .tab-button { padding: 0.6rem 1rem; font-size: 1rem; } .ideas-grid { grid-template-columns: 1fr; gap: 1rem; } .peoples-ideas-container .ideas-grid { grid-template-columns: 1fr; } .user-actions span { display: none; } .file-input-container { flex-direction: column; align-items: stretch; gap: 0.5rem; } .form-group.file-upload-group label.file-upload-button { width: 100%; margin-right: 0; } .file-name-display { width: 100%; box-sizing: border-box; margin-top: 0; text-align: center; padding: 0.5rem 0.8rem; } .idea-footer { font-size: 0.75em; } .upvote-button { font-size: 1em; } .upvote-count { line-height: normal; } .idea-header-info { font-size: 0.9em; } }
