@@ -1,84 +1,163 @@
 /* src/App.css */
 
-/* --- Global Styles & Variables --- */
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,250;0,600;1,400&display=swap');
+
+/* --- Global Styles & Variables (Dark Mode) --- */
 :root {
-  --primary-color: #007bff;
-  --primary-hover-color: #0056b3;
-  --secondary-color: #6c757d;
-  --secondary-hover-color: #5a6268;
-  --danger-color: #dc3545;
-  --danger-hover-color: #c82333;
-  --light-gray: #f8f9fa;
-  --medium-gray: #e9ecef;
-  --dark-gray: #6c757d;
-  --text-color: #333;
-  --border-color: #dee2e6;
-  --box-shadow-light: 0 2px 5px rgba(0, 0, 0, 0.07);
-  --box-shadow-hover: 0 5px 15px rgba(0, 0, 0, 0.12);
+  /* Core Colors */
+  --background-dark: #121212; /* Very dark grey, near black */
+  --surface-dark: #1e1e1e; /* Slightly lighter for cards/surfaces */
+  --surface-medium: #2a2a2a; /* Mid-tone for elements on surfaces */
+  --text-light: #e0e0e0; /* Primary light text (off-white) */
+  --text-medium: #b0b0b0; /* Secondary light text (grey) */
+  --text-dark: #333; /* Keep for fallback or specific uses */
+
+  /* Accent Colors (Tron-like) */
+  --neon-blue: #00ffff; /* Cyan */
+  --neon-pink: #ff00ff; /* Magenta */
+  --neon-blue-rgb: 0, 255, 255; /* For rgba usage */
+  --neon-pink-rgb: 255, 0, 255; /* For rgba usage */
+
+  /* Button/Action Colors (Adjusted for Dark Mode) */
+  --primary-color: #3498db; /* Brighter blue for dark bg */
+  --primary-hover-color: #5dade2; /* Lighter blue on hover */
+  --secondary-color: #555; /* Darker grey button */
+  --secondary-hover-color: #777; /* Lighter grey on hover */
+  --danger-color: #e74c3c; /* Consistent red */
+  --danger-hover-color: #c0392b; /* Darker red on hover */
+
+  /* Borders & Separators */
+  --border-color: #444; /* Subtle dark border */
+  --border-color-stronger: #666; /* More visible border */
+
+  /* Shadows (Subtle on Dark) */
+  --box-shadow-light: 0 3px 8px rgba(0, 0, 0, 0.4);
+  --box-shadow-hover: 0 6px 15px rgba(0, 0, 0, 0.6);
+  --box-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.5); /* Slightly more pronounced for cards */
+
+  /* Layout & Font */
   --border-radius: 8px;
   --page-max-width: 1200px;
   --base-font-size: 16px;
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-family-cards: 'Poppins', var(--font-family);
-  --border-color-stronger: #bbb;
-  --box-shadow-card: 0 3px 8px rgba(0, 0, 0, 0.09);
+  --font-family-cards: 'Poppins', var(--font-family); /* Keep Poppins for cards if desired */
 
-  /* Gradients */
-  --sub-gradient-1: linear-gradient(45deg, #2193b0, #6dd5ed);
-  --sub-gradient-2: linear-gradient(45deg, #6a11cb, #b76dd1);
-  --sub-gradient-3: linear-gradient(45deg, #cc5333, #f5af19);
-  --sub-gradient-4: linear-gradient(45deg, #004e92, #4facfe);
-  --sub-gradient-5: linear-gradient(45deg, #11998e, #38ef7d);
-  --main-gradient-1: linear-gradient(45deg, #f857a6, #ff5858);
-  --main-gradient-2: linear-gradient(45deg, #fc5c7d, #6a82fb);
-  --main-gradient-3: linear-gradient(45deg, #4facfe, #00f2fe);
-  --main-gradient-4: linear-gradient(45deg, #6a11cb, #2575fc);
+  /* Neon Gradients for Titles */
+  --sub-gradient-1: linear-gradient(45deg, var(--neon-blue), #6dd5ed);
+  --sub-gradient-2: linear-gradient(45deg, var(--neon-pink), #b76dd1);
+  --sub-gradient-3: linear-gradient(45deg, #cc5333, #f5af19); /* Keeping orange/yellow for upload */
+  --sub-gradient-4: linear-gradient(45deg, #004e92, var(--neon-blue));
+  --sub-gradient-5: linear-gradient(45deg, #11998e, #38ef7d); /* Keeping green/teal */
+  --main-gradient-1: linear-gradient(45deg, var(--neon-pink), #ff69b4); /* HotPink */
+  --main-gradient-2: linear-gradient(45deg, var(--neon-blue), var(--neon-pink));
+  --main-gradient-3: linear-gradient(45deg, #00bfff, var(--neon-blue)); /* DeepSkyBlue -> Cyan */
+  --main-gradient-4: linear-gradient(45deg, #8a2be2, var(--neon-pink)); /* BlueViolet -> Magenta */
 }
 
 /* --- Base Body/HTML --- */
 html, body, #root { height: 100%; margin: 0; padding: 0; }
 body {
   font-family: var(--font-family); font-size: var(--base-font-size); line-height: 1.6;
-  background: radial-gradient(circle, #ffffff 0%, #f8f8f8 100%); background-repeat: no-repeat;
-  background-attachment: fixed; color: var(--text-color); overflow-y: scroll; min-height: 100vh;
+  background-color: var(--background-dark); /* Dark background */
+  color: var(--text-light); /* Default light text */
+  overflow-y: scroll; min-height: 100vh;
+  /* Remove light radial gradient */
 }
 html { height: 100%; }
-h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600; }
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0; margin-bottom: 0.75rem; font-weight: 600;
+  color: var(--text-light); /* Ensure headings are light */
+}
 
 /* --- App Header Bar --- */
 .app-header {
-  width: 100%; background: linear-gradient(135deg, #282828 0%, #424242 100%);
-  padding: 0.5rem 0; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.1);
-  position: relative; z-index: 10; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;
+  width: 100%;
+  background: linear-gradient(135deg, #1f1f1f 0%, #2c2c2c 100%); /* Dark gradient */
+  padding: 0.5rem 0;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); /* Darker shadow */
+  position: relative; z-index: 10;
+  border-bottom-left-radius: 0; /* Remove bottom radius for sharper look */
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid var(--border-color); /* Add subtle bottom border */
 }
 .header-content { padding: 0 1rem; display: flex; justify-content: flex-end; align-items: center; min-height: 3rem; }
 .user-actions { display: flex; align-items: center; gap: 0.8rem; }
-.user-actions span { color: white; font-weight: 500; margin-right: 0.5rem; white-space: nowrap; }
+.user-actions span { color: var(--text-light); font-weight: 500; margin-right: 0.5rem; white-space: nowrap; }
 .user-actions button { padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; border: none; line-height: 1.4; }
-.user-actions .btn-login { background-color: var(--primary-color); color: white; }
+.user-actions .btn-login { background-color: var(--primary-color); color: white; } /* Use updated primary */
 .user-actions .btn-login:hover { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-light); }
-.user-actions .btn-logout { background-color: var(--secondary-color); color: white; }
+.user-actions .btn-logout { background-color: var(--secondary-color); color: white; } /* Use updated secondary */
 .user-actions .btn-logout:hover { background-color: var(--secondary-hover-color); box-shadow: var(--box-shadow-light); }
+
+.tab-description {
+  text-align: center;
+  margin-top: 0.2rem; /* Space below tabs */
+  margin-bottom: 0rem; /* Space above content */
+  /* Change color to the brighter light text */
+  color: var(--text-light);
+  font-size: 1.3rem; /* Keep existing size */
+  line-height: 1.5;
+  max-width: 700px; /* Keep it constrained */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1rem; /* Padding for smaller screens */
+  /* Apply the new font */
+  font-family: 'Exo 2', var(--font-family); /* Use Exo 2, fallback to default */
+  font-weight: 400; /* Use regular weight */
+}
+
+.tab-description p {
+  margin-top: 0.1em; /* Remove default top margin */
+  margin-bottom: 0.05rem; /* Add only a small bottom margin for minimal spacing */
+  /* Adjust 0.25em as needed (e.g., 0.1em, 0.4em, or even 0 if line-height is sufficient) */
+}
+
 
 /* --- Main App Container --- */
 .app-container { max-width: var(--page-max-width); margin: 0 auto; padding: 1.5rem 1rem 1rem 1rem; display: flex; flex-direction: column; flex-grow: 1; }
 
-/* --- Main Title --- */
-.main-title { text-align: center; font-size: 3.5rem; font-weight: 600; margin-top: 0.5rem; margin-bottom: 2rem; color: var(--text-color); }
-.main-title .title-char { display: inline-block; -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: inherit; }
+/* --- Main Title (Neon Gradients) --- */
+.main-title {
+  text-align: center; font-size: 3.5rem; font-weight: 600; margin-top: 0.5rem; margin-bottom: 2rem;
+  color: var(--text-light); /* Fallback color */
+  /* text-shadow: 0 0 8px rgba(var(--neon-blue-rgb), 0.3), 0 0 15px rgba(var(--neon-pink-rgb), 0.2); Optional subtle glow */
+}
+.main-title .title-char {
+  display: inline-block; -webkit-background-clip: text; background-clip: text;
+  color: transparent; font-weight: inherit;
+}
+/* Apply NEW neon gradients */
 .main-title .title-char:nth-of-type(1) { background-image: var(--main-gradient-1); }
 .main-title .title-char:nth-of-type(2) { background-image: var(--main-gradient-2); }
 .main-title .title-char:nth-of-type(3) { background-image: var(--main-gradient-3); }
 .main-title .title-char:nth-of-type(4) { background-image: var(--main-gradient-4); }
 
 /* --- Tab Navigation --- */
-.tabs { display: flex; justify-content: center; margin-bottom: 0rem; gap: 0; position: relative; }
-.tabs::after { content: ''; position: absolute; left: 5%; right: 5%; bottom: 0; height: 1px; background: linear-gradient(to right, transparent 0%, var(--medium-gray) 50%, transparent 100%); }
-.tab-button { padding: 1rem 2.5rem; border: none; background-color: transparent; cursor: pointer; font-size: 1.2rem; color: var(--secondary-color); border-bottom: 4px solid transparent; transition: color 0.3s ease; position: relative; z-index: 1; margin-bottom: -1px; white-space: nowrap; }
-.tab-button:hover:not(:disabled) { color: var(--primary-hover-color); }
-.tab-button.active { color: var(--primary-color); font-weight: 600; }
-.tab-button:disabled, .tab-button.disabled { color: var(--medium-gray); cursor: not-allowed; opacity: 0.6; }
-.tab-slider { position: absolute; bottom: -1px; height: 4px; background-color: var(--primary-color); border-radius: 2px; transition: left 0.3s ease-in-out, width 0.3s ease-in-out; z-index: 2; }
+.tabs { display: flex; justify-content: center; margin-bottom: 0.5rem; gap: 0; position: relative; }
+.tabs::after {
+  content: ''; position: absolute; left: 5%; right: 5%; bottom: 0; height: 1px;
+  background: linear-gradient(to right, transparent 0%, var(--border-color) 50%, transparent 100%); /* Darker separator */
+}
+.tab-button {
+  padding: 1rem 2.5rem; border: none; background-color: transparent; cursor: pointer;
+  font-size: 1.2rem; color: var(--text-medium); /* Dimmer default text */
+  border-bottom: 4px solid transparent; transition: color 0.3s ease, border-color 0.3s ease; /* Added border transition */
+  position: relative; z-index: 1; margin-bottom: -1px; white-space: nowrap;
+}
+.tab-button:hover:not(:disabled) { color: var(--text-light); } /* Brighter hover */
+.tab-button.active {
+  color: var(--neon-blue); /* Use Neon Blue for active tab */
+  font-weight: 600;
+}
+.tab-button:disabled, .tab-button.disabled {
+  color: #555; /* Darker grey for disabled */
+  cursor: not-allowed; opacity: 0.6;
+}
+.tab-slider {
+  position: absolute; bottom: -1px; height: 4px;
+  background-color: var(--neon-blue); /* Match active tab color */
+  border-radius: 2px; transition: left 0.3s ease-in-out, width 0.3s ease-in-out; z-index: 2;
+}
 
 /* --- Main Content Area --- */
 .content-area { padding: 1rem 0; flex-grow: 1; }
@@ -86,50 +165,148 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 /* --- General Content Sections --- */
 .my-ideas-container, .peoples-ideas-container { padding: 1rem 0; }
 
-/* --- Peoples Ideas Section Title --- */
-.peoples-ideas-container .section-subtitle { text-align: center; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem; color: var(--text-color); }
-.peoples-ideas-container .section-subtitle .subtitle-char { display: inline-block; -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: inherit; }
+/* --- Peoples Ideas Section Title (Neon Gradients) --- */
+.peoples-ideas-container .section-subtitle {
+  text-align: center; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem;
+  color: var(--text-light); /* Fallback */
+}
+.peoples-ideas-container .section-subtitle .subtitle-char {
+  display: inline-block; -webkit-background-clip: text; background-clip: text;
+  color: transparent; font-weight: inherit;
+}
+/* Apply NEW sub-gradients */
 .section-subtitle .subtitle-char:nth-of-type(1) { background-image: var(--sub-gradient-1); }
 .section-subtitle .subtitle-char:nth-of-type(2) { background-image: var(--sub-gradient-2); }
 .section-subtitle .subtitle-char:nth-of-type(3) { background-image: var(--sub-gradient-3); }
 .section-subtitle .subtitle-char:nth-of-type(4) { background-image: var(--sub-gradient-4); }
 .section-subtitle .subtitle-char:nth-of-type(5) { background-image: var(--sub-gradient-5); }
-.peoples-ideas-container p[style*="text-align: center"] { margin-top: 0; margin-bottom: 1.5rem; }
+.peoples-ideas-container p[style*="text-align: center"] {
+    margin-top: 0; margin-bottom: 1.5rem; color: var(--text-medium); /* Lighter text for intro */
+}
 
 /* --- Upload Form Section --- */
-.upload-section { background-color: #fff; padding: 2rem; border-radius: var(--border-radius); box-shadow: var(--box-shadow-light); margin-bottom: 2rem; max-width: 550px; margin-left: auto; margin-right: auto; }
-.upload-section .upload-section-title { margin-bottom: 1.5rem; text-align: center; font-weight: 600; color: var(--text-color); font-size: 1.8rem; }
-.upload-section .upload-section-title .upload-title-char { display: inline-block; -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: inherit; }
-.upload-section-title .upload-title-char:nth-of-type(1) { background-image: var(--sub-gradient-3); }
-.upload-section-title .upload-title-char:nth-of-type(2) { background-image: var(--sub-gradient-5); }
-.upload-section-title .upload-title-char:nth-of-type(3) { background-image: var(--sub-gradient-1); }
-.upload-section-title .upload-title-char:nth-of-type(4) { background-image: var(--sub-gradient-4); }
+.upload-section {
+  background-color: var(--surface-dark); /* Dark surface background */
+  /* Reduce vertical padding, keep horizontal */
+  padding: 1.5rem 2rem; /* ADJUST vertical padding (e.g., 1.5rem or 1.25rem) */
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-light);
+  margin-bottom: 2rem;
+  max-width: 550px; margin-left: auto; margin-right: auto;
+  border: 1px solid var(--border-color); /* Add subtle border */
+}
+.upload-section .upload-section-title {
+  margin-bottom: 1rem; /* Reduced from 1.5rem */
+  text-align: center; font-weight: 600;
+  color: var(--text-light); font-size: 1.8rem;
+}
 
+.upload-section .upload-section-title .upload-title-char {
+  display: inline-block; -webkit-background-clip: text; background-clip: text;
+  color: transparent; font-weight: inherit;
+}
+/* Keep existing upload title gradients (orange/green etc) */
+.upload-section-title .upload-title-char:nth-of-type(1) { background-image: var(--main-gradient-1); } /* N */
+.upload-section-title .upload-title-char:nth-of-type(2) { background-image: var(--main-gradient-2); } /* o */
+.upload-section-title .upload-title-char:nth-of-type(3) { background-image: var(--main-gradient-3); } /* t */
+.upload-section-title .upload-title-char:nth-of-type(4) { background-image: var(--main-gradient-4); } /* e */
 /* --- Upload Form Elements --- */
-.upload-form .form-group { margin-bottom: 1.25rem; }
-.upload-form label { display: block; margin-bottom: 0.4rem; font-weight: 500; color: var(--dark-gray); font-size: 0.95rem; }
-.form-group.file-upload-group > label:first-of-type { margin-bottom: 0.4rem; }
-.file-input-container { display: flex; align-items: center; gap: 0.8rem; width: 100%; }
-.form-group.file-upload-group label.file-upload-button { display: inline-block; padding: 0.5rem 1rem; margin-bottom: 0; margin-right: 0.8rem; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.9rem; line-height: 1.4; border: none; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; font-weight: 500; white-space: nowrap; flex-shrink: 0; background-color: #5a0eab; color: white; background-image: none; }
-.form-group.file-upload-group label.file-upload-button:hover { background-color: #490b8a; box-shadow: var(--box-shadow-light); opacity: 1; }
-.file-name-display { flex-grow: 1; font-size: 0.9rem; color: var(--dark-gray); background-color: var(--light-gray); padding: 0.5rem 0.8rem; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
-.file-name-display span.placeholder { color: var(--secondary-color); font-style: italic; }
+.upload-form .form-group { margin-bottom: 0.8rem; }
+.upload-form label {
+  display: block; margin-bottom: 0.25rem; font-weight: 500;
+  color: var(--text-medium); /* Lighter label text */
+  font-size: 0.95rem;
+}
+.form-group.file-upload-group > label:first-of-type { margin-bottom: 0.25rem; }
+.file-input-container { display: flex; align-items: center; gap: 0.2rem; width: 100%; }
+
+.form-group.file-upload-group label.file-upload-button {
+  display: inline-block;
+  padding: 0.4rem 1rem; /* Reduced from 0.5rem */
+  margin-bottom: 0; margin-right: 0.6rem; /* Matched gap */
+  border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.9rem; /* Font size kept */
+  line-height: 1.4; border: none; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  font-weight: 500; white-space: nowrap; flex-shrink: 0;
+  background-color: #7e57c2; /* Brighter Purple */
+  color: white;
+  background-image: none;
+}
+.form-group.file-upload-group label.file-upload-button:hover {
+  background-color: #673ab7; /* Slightly darker purple */
+  box-shadow: var(--box-shadow-light); opacity: 1;
+}
+
+.file-name-display {
+  flex-grow: 1; font-size: 0.9rem; color: var(--text-medium); /* Font size kept */
+  background-color: var(--surface-medium); /* Darker input background */
+  padding: 0.4rem 0.8rem; /* Reduced from 0.5rem */
+  border: 1px solid var(--border-color); border-radius: 6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4;
+}
+.file-name-display span.placeholder {
+    color: var(--text-medium); opacity: 0.7; /* Slightly dimmer placeholder */
+    font-style: italic;
+}
 .visually-hidden-file-input { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; white-space: nowrap; }
-.visually-hidden-file-input:focus + .file-input-container .file-upload-button { outline: 2px solid var(--primary-color); outline-offset: 3px; }
+.visually-hidden-file-input:focus + .file-input-container .file-upload-button {
+    /* Use neon blue for focus outline on the file button */
+    outline: 2px solid var(--neon-blue);
+    outline-offset: 3px;
+}
 
 /* --- Textarea, Select, BPM Input --- */
-.upload-form textarea, .upload-form select, .upload-form input[type="number"].bpm-input { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; color: var(--text-color); line-height: 1.5; }
-.upload-form textarea { resize: vertical; min-height: 80px; }
-.upload-form select { appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236c757d%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 0.9rem center; background-size: 0.65em auto; padding-right: 2.5rem; }
+.upload-form textarea, .upload-form select, .upload-form input[type="number"].bpm-input {
+  width: 100%;
+  /* Reduce vertical padding */
+  padding: 0.5rem 0.9rem; /* Reduced from 0.7rem */
+  border: 1px solid var(--border-color);
+  border-radius: 6px; font-size: 0.95rem; /* Font size kept */
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--surface-medium); /* Dark input background */
+  color: var(--text-light); /* Light text in inputs */
+  line-height: 1.5;
+}
+.upload-form textarea {
+  min-height: 45px; /* Reduced significantly from 80px - corresponds roughly to 2 rows */
+  resize: none; /* Disable resizing to maintain compressed look */
+}
+
+.upload-form select {
+  appearance: none;
+  /* Updated SVG arrow for dark mode - fill color changed to #b0b0b0 (var(--text-medium)) */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b0b0b0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat; background-position: right 0.9rem center; background-size: 0.65em auto;
+  padding-right: 2.5rem;
+}
 .upload-form input[type="number"].bpm-input { max-width: 150px; }
-.upload-form textarea:focus, .upload-form select:focus, .upload-form input[type="number"].bpm-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
+.upload-form textarea:focus, .upload-form select:focus, .upload-form input[type="number"].bpm-input:focus {
+  outline: none;
+  border-color: var(--neon-blue); /* Neon blue border on focus */
+  box-shadow: 0 0 0 3px rgba(var(--neon-blue-rgb), 0.3); /* Neon blue glow */
+}
 
 /* --- Submit Button --- */
-.upload-form button[type="submit"].btn-primary { width: 100%; padding: 0.8rem 1.2rem; font-size: 1rem; margin-top: 0.5rem; background-color: var(--primary-color); color: white; }
-.upload-form button[type="submit"].btn-primary:hover:not(:disabled) { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-light); }
+.upload-form button[type="submit"].btn-primary {
+  width: 100%;
+  padding: 0.6rem 1.2rem; 
+  font-size: 1rem; /* Font size kept */
+  margin-top: 0.5rem; 
+  background-color: var(--primary-color); /* Use updated primary */
+  color: white;
+}
+.upload-form button[type="submit"].btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover-color); /* Use updated primary hover */
+  box-shadow: var(--box-shadow-light);
+}
 
 /* --- General Button Styles --- */
-.btn { display: inline-block; padding: 0.6rem 1.2rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 500; text-align: center; text-decoration: none; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease; line-height: 1.4; }
+.btn {
+  display: inline-block; padding: 0.6rem 1.2rem; border: none; border-radius: 6px;
+  cursor: pointer; font-size: 0.95rem; font-weight: 500; text-align: center;
+  text-decoration: none; transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  line-height: 1.4;
+}
 .btn-primary { background-color: var(--primary-color); color: white; }
 .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover-color); box-shadow: var(--box-shadow-light); }
 .btn-secondary { background-color: var(--secondary-color); color: white; }
@@ -138,58 +315,134 @@ h1, h2, h3, h4, h5, h6 { margin-top: 0; margin-bottom: 0.75rem; font-weight: 600
 .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover-color); box-shadow: var(--box-shadow-light); }
 
 /* --- Disabled Button Styles --- */
-button:disabled, .btn:disabled { background-color: var(--medium-gray); color: var(--dark-gray); cursor: not-allowed; box-shadow: none; opacity: 0.65; }
-.upload-form button[type="submit"].btn-primary:disabled { background-color: var(--medium-gray); color: var(--dark-gray); opacity: 0.65; box-shadow: none; }
+button:disabled, .btn:disabled {
+  background-color: #444; /* Darker grey background */
+  color: #888; /* Dimmer text color */
+  cursor: not-allowed; box-shadow: none; opacity: 0.65;
+}
+.upload-form button[type="submit"].btn-primary:disabled {
+  background-color: #444; color: #888; opacity: 0.65; box-shadow: none;
+}
 
 /* --- Idea List Section --- */
 .ideas-list-section { margin-top: 2rem; }
-.ideas-list-section h2 { text-align: center; margin-bottom: 1.5rem; font-weight: 600; }
+.ideas-list-section h2 {
+  text-align: center; margin-bottom: 1.5rem; font-weight: 600;
+  color: var(--text-light); /* Ensure title is light */
+}
 
 /* --- Grid Layout --- */
 .ideas-grid { display: grid; gap: 1.8rem; }
-.my-ideas-container .ideas-grid, .peoples-ideas-container .ideas-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.my-ideas-container .ideas-grid, .peoples-ideas-container .ideas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
 
-/* --- Idea Box --- */
-.idea-box { border: 1px solid var(--border-color-stronger); padding: 1.5rem; border-radius: 10px; box-shadow: var(--box-shadow-card); transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; display: flex; flex-direction: column; min-height: 220px; font-family: var(--font-family-cards); overflow: hidden; position: relative; color: #454545; justify-content: space-between; }
-.idea-box:hover { transform: translateY(-5px); box-shadow: var(--box-shadow-hover); }
-.idea-box.gradient-1 { background: linear-gradient(135deg, #fffdd0 0%, #fffaf0 100%); }
-.idea-box.gradient-2 { background: linear-gradient(135deg, #fffacd 0%, #fff8dc 100%); }
-.idea-box.gradient-3 { background: linear-gradient(135deg, #fff8e1 0%, #fffacd 100%); }
-.idea-box.gradient-4 { background: linear-gradient(135deg, #fffaf0 0%, #f5deb3 100%); }
-.idea-box.gradient-5 { background: linear-gradient(135deg, #fffacd 0%, #fff5e1 100%); }
-.idea-box.gradient-6 { background: linear-gradient(135deg, #f5f5dc 0%, #fff8e1 100%); }
-.idea-box.gradient-7 { background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%); }
-.idea-box.gradient-8 { background: linear-gradient(135deg, #fff5e1 0%, #f5f5dc 100%); }
-.idea-box.gradient-9 { background: linear-gradient(135deg, #fffacd 0%, #ffe4c4 100%); }
-.idea-box.gradient-10 { background: linear-gradient(135deg, #fffaf0 0%, #f0e68c 100%); }
+/* --- Idea Box (Dark, Minimal, Futuristic) --- */
+.idea-box {
+  border: 1px solid var(--border-color); /* Darker border */
+  padding: 1.5rem;
+  border-radius: 6px; /* Slightly sharper corners */
+  box-shadow: var(--box-shadow-card); /* Use updated card shadow */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  display: flex; flex-direction: column;
+  min-height: 220px; /* Keep min-height */
+  font-family: var(--font-family-cards);
+  overflow: hidden; position: relative;
+  background-color: var(--surface-dark); /* Dark background for card */
+  color: var(--text-medium); /* Default text color inside card */
+  justify-content: space-between;
+  /* Remove ALL gradient background classes */
+}
+.idea-box:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-hover); /* Use updated hover shadow */
+  border-color: var(--border-color-stronger); /* Slightly brighter border on hover */
+}
+
+/* Remove specific gradient background styles */
+.idea-box.gradient-1, .idea-box.gradient-2, .idea-box.gradient-3,
+.idea-box.gradient-4, .idea-box.gradient-5, .idea-box.gradient-6,
+.idea-box.gradient-7, .idea-box.gradient-8, .idea-box.gradient-9,
+.idea-box.gradient-10 {
+    background: none; /* Remove gradient backgrounds */
+    background-color: var(--surface-dark); /* Ensure dark background */
+}
 
 .idea-box p { margin-top: 0; margin-bottom: 0.6rem; word-break: break-word; }
 .idea-box p:last-of-type { margin-bottom: 0; }
 
 /* Idea Box Header (Filename & BPM) */
 .idea-header-info { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 0.5rem; flex-wrap: wrap; }
-.idea-box .idea-filename { font-weight: 600; color: #333; font-size: 1.1rem; margin-bottom: 0; flex-grow: 1; }
+
+.idea-box .idea-filename {
+  font-weight: 600;
+  color: transparent; /* Make text transparent */
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+  flex-grow: 1;
+  display: inline-block; /* Often helps ensure background applies correctly */
+}
+
+.ideas-grid .idea-box:nth-child(4n + 1) .idea-filename {
+  background-image: var(--main-gradient-1);
+}
+
+.ideas-grid .idea-box:nth-child(4n + 2) .idea-filename {
+  background-image: var(--main-gradient-2);
+}
+
+.ideas-grid .idea-box:nth-child(4n + 3) .idea-filename {
+  background-image: var(--main-gradient-3);
+}
+
+.ideas-grid .idea-box:nth-child(4n + 4) .idea-filename {
+  background-image: var(--main-gradient-4);
+}
+
 .idea-box .idea-bpm {
   font-size: 0.85em;
   font-weight: 500;
-  color: #333; /* Changed from #777 to #333 */
-  background-color: transparent; /* Removed the background */
-  padding: 2px 6px; /* Keep padding for spacing */
+  color: var(--text-medium); /* Keep BPM text medium */
+  background-color: transparent; /* No background */
+  padding: 1px 5px; /* Minimal padding */
   border-radius: 4px;
   margin-bottom: 0;
   white-space: nowrap;
   flex-shrink: 0;
-}.idea-box .idea-description { font-style: normal; color: #555; font-size: 0.95rem; flex-grow: 1; margin-bottom: 1rem; line-height: 1.5; }
+  border: 1px solid var(--border-color); /* Subtle border around BPM */
+}
+.idea-box .idea-description {
+    font-style: normal;
+    color: white; /* Keep description medium */
+    font-size: 0.95rem; flex-grow: 1; margin-bottom: 1rem; line-height: 1.5;
+}
 
 /* Audio Player */
-.idea-box audio, .idea-box .audio-player-container { width: 100%; margin-top: 0.5rem; margin-bottom: 0.75rem; }
+.idea-box audio, .idea-box .audio-player-container {
+  width: 100%; margin-top: 0.5rem; margin-bottom: 0.75rem;
+  /* Consider adding filter: invert(1) brightness(0.9) hue-rotate(180deg); if default player looks bad */
+}
 
 /* Remove Button (MyIdeas only) */
-.idea-box .remove-button.btn-danger { background-color: var(--danger-color); color: white; margin-top: 1rem; align-self: flex-start; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
-.idea-box .remove-button.btn-danger:hover:not(:disabled) { background-color: var(--danger-hover-color); box-shadow: var(--box-shadow-light); }
+.idea-box .remove-button.btn-danger {
+  background-color: var(--danger-color); color: white; margin-top: 1rem;
+  align-self: flex-start; padding: 0.4rem 0.8rem; font-size: 0.85rem;
+}
+.idea-box .remove-button.btn-danger:hover:not(:disabled) {
+  background-color: var(--danger-hover-color); box-shadow: var(--box-shadow-light);
+}
 
 /* --- Idea Box Footer (Upvotes & Dates) --- */
-.idea-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(0, 0, 0, 0.1); font-size: 0.8em; color: #555; flex-shrink: 0; }
+.idea-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1rem; padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color); /* Use dark border color */
+  font-size: 0.8em;
+  color: var(--text-medium); /* Footer text medium grey */
+  flex-shrink: 0;
+}
 .idea-footer .idea-dates { margin: 0; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 5px; }
 .upvote-section { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
@@ -197,71 +450,100 @@ button:disabled, .btn:disabled { background-color: var(--medium-gray); color: va
 .upvote-button {
   background: none;
   border: none;
-  color: inherit;
+  color: inherit; /* Inherit medium grey color */
   cursor: pointer;
-  /* Adjust padding slightly if needed, or remove if you want zero space */
-  padding: 1px 2px; /* Reduced padding */
-  font-size: 1.1em;
+  padding: 0px 1px; /* Minimal padding */
+  font-size: 1.1em; /* Base size reference */
   line-height: 1;
   border-radius: 5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-flex; align-items: center; justify-content: center;
   vertical-align: middle;
-  transition: transform 0.15s ease-in-out, opacity 0.2s ease, background-color 0.1s ease; /* Added background transition */
+  transition: transform 0.15s ease-in-out, opacity 0.2s ease, background-color 0.1s ease;
 }
 
-.upvote-button:hover:not(:disabled) { transform: scale(1.15); background-color: rgba(0, 0, 0, 0.05); }
+.upvote-icon {
+  width: 1.7em; /* Adjust size to match emoji size roughly */
+  height: 1.7em; /* Adjust size */
+  display: block; /* Prevents extra space below inline images */
+}
+
+.upvote-button:hover:not(:disabled) {
+  transform: scale(1.15);
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle light background on hover */
+}
 .upvote-button:disabled { cursor: not-allowed; opacity: 0.6; }
 .upvote-button.processing { opacity: 0.5; animation: pulse 1s infinite; }
 
 .upvote-button.voted {
   opacity: 0.9;
   cursor: default;
-  background-color: transparent !important; /* Explicitly ensure no background */
+  background-color: transparent !important;
 }
-
 .upvote-button.voted:hover {
-  transform: none; /* Already had this */
-  background-color: transparent !important; /* Reinforce transparency on hover */
+  transform: none;
+  background-color: transparent !important;
 }
-.upvote-count { font-weight: 600; min-width: 1.7em; text-align: right; font-variant-numeric: tabular-nums; color: inherit; line-height: normal; padding-left: 2px; vertical-align: middle; }
+/* Emoji color - '❤️' might be okay, '✔️' is fine. Tweak if needed */
 
-/* --- Gradient Specific Colors (!!! ADJUST THESE !!!) --- */
-/* You MUST adjust footer/bpm colors based on YOUR gradients for readability */
-.gradient-1 .idea-footer, .gradient-1 .idea-bpm { color: #444; border-top-color: rgba(0, 0, 0, 0.1); }
-.gradient-1 .idea-bpm { background-color: rgba(0, 0, 0, 0.05); }
-/* .gradient-1 .upvote-button { color: #555; } */ /* Optional emoji color override */
+.upvote-count {
+    font-weight: 600; min-width: 1.7em; text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-light); /* Make count brighter */
+    line-height: normal; padding-left: 2px; vertical-align: middle;
+}
 
-.gradient-4 .idea-footer, .gradient-4 .idea-bpm { color: #50402a; border-top-color: rgba(0, 0, 0, 0.12); }
-.gradient-4 .idea-bpm { background-color: rgba(0, 0, 0, 0.06); }
-
-/* Add rules for YOUR gradients 2, 3, 5, 6, 7, 8, 9, 10 here */
-/* ... */
+/* --- REMOVE Gradient Specific Colors --- */
+/* These overrides are no longer needed */
+/* .gradient-1 .idea-footer, .gradient-1 .idea-bpm { ... } */
+/* .gradient-4 .idea-footer, .gradient-4 .idea-bpm { ... } */
+/* ... etc ... */
 
 /* --- Feedback Messages --- */
 .feedback-area { margin-top: 1rem; text-align: center; min-height: 1.5em; font-size: 0.9rem; }
 .form-feedback { margin-top: 1.25rem; }
 .list-feedback { margin-bottom: 1rem; }
-.error-message { color: var(--danger-color); font-weight: 500; }
-.info-message { color: var(--primary-color); font-weight: 500; }
+.error-message { color: var(--danger-color); font-weight: 500; } /* Use danger color */
+.info-message { color: var(--primary-color); font-weight: 500; } /* Use primary color */
 
 /* --- Separators --- */
-.sleek-separator { height: 1px; border: none; width: 90%; max-width: 700px; margin: 2rem auto; background: linear-gradient(to right, transparent 0%, var(--medium-gray) 50%, transparent 100%); }
+.sleek-separator {
+  height: 1px; border: none; width: 90%; max-width: 700px; margin: 2rem auto;
+  background: linear-gradient(to right, transparent 0%, var(--border-color) 50%, transparent 100%); /* Use dark border color */
+}
 
 /* --- Loading State --- */
-.loading-container { display: flex; justify-content: center; align-items: center; min-height: 200px; font-size: 1.2rem; color: var(--dark-gray); }
+.loading-container {
+    display: flex; justify-content: center; align-items: center;
+    min-height: 200px; font-size: 1.2rem;
+    color: var(--text-medium); /* Medium grey text */
+}
 
 /* --- Login Prompt --- */
-.login-prompt { text-align: center; padding: 3rem 1rem; margin-top: 2rem; color: var(--dark-gray); background-color: #fff; border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--box-shadow-light); }
+.login-prompt {
+  text-align: center; padding: 3rem 1rem; margin-top: 2rem;
+  color: var(--text-medium); /* Medium grey text */
+  background-color: var(--surface-dark); /* Dark background */
+  border: 1px solid var(--border-color); /* Dark border */
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-light);
+}
 .login-prompt p { font-size: 1.1rem; line-height: 1.7; margin: 0; }
-.link-button { background: none; border: none; padding: 0; margin: 0; color: var(--primary-color); text-decoration: underline; cursor: pointer; font-size: inherit; font-family: inherit; font-weight: 600; vertical-align: baseline; }
-.link-button:hover { color: var(--primary-hover-color); text-decoration: none; }
+.link-button {
+  background: none; border: none; padding: 0; margin: 0;
+  color: var(--primary-color); /* Use primary blue for link */
+  text-decoration: underline; cursor: pointer; font-size: inherit;
+  font-family: inherit; font-weight: 600; vertical-align: baseline;
+}
+.link-button:hover {
+  color: var(--primary-hover-color); /* Lighter blue on hover */
+  text-decoration: none;
+}
 
 /* --- Keyframes --- */
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
 /* --- Responsive --- */
+/* Keep existing responsive rules, they should adapt okay */
 @media (min-width: 992px) { .peoples-ideas-container .ideas-grid { grid-template-columns: repeat(2, 1fr); max-width: 900px; margin-left: auto; margin-right: auto; } }
 @media (max-width: 991px) { .ideas-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; } .peoples-ideas-container .ideas-grid { max-width: none; margin-left: 0; margin-right: 0; } }
 @media (max-width: 768px) { :root { --base-font-size: 15px; } .app-container { padding: 1.5rem 0.75rem 1rem 0.75rem; } .main-title { font-size: 2rem; margin-bottom: 1.5rem; } .tab-button { padding: 0.8rem 1.5rem; font-size: 1.1rem; } .upload-section { max-width: 90%; padding: 1.5rem; } .idea-box { padding: 1rem; min-height: 200px; } }

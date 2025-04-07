@@ -13,9 +13,10 @@ import MyIdeas from './components/MyIdeas';
 import PeoplesIdeas from './components/PeoplesIdeas';
 import './App.css'; // Main application styles
 
+
 // Helper to determine if we are running in mock mode
 // Defaults to false (live mode) unless VITE_USE_MOCK_DATA is explicitly 'true'
-const isMockMode = import.meta.env.VITE_USE_MOCK_DATA === 'false';
+const isMockMode = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
 function App() {
     // State
@@ -39,6 +40,7 @@ function App() {
                     // Dynamically import mock data only when in mock mode
                     const mockDataModule = await import('./mockData');
                     const mockUser = mockDataModule.mockUser;
+                    
 
                     setUser(mockUser);
                     setActiveTab(mockUser ? 'myIdeas' : 'peoplesIdeas');
@@ -76,16 +78,13 @@ function App() {
             const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
                 const currentUser = session?.user ?? null;
                 setUser(currentUser);
-                // Update active tab based on auth events *after* initial load is done
-                 if (!loadingAuth) { // Check loadingAuth flag might be less reliable here after async operations
-                    if (_event === 'SIGNED_IN') {
-                        setActiveTab('myIdeas');
-                    } else if (_event === 'SIGNED_OUT') {
-                        setActiveTab('peoplesIdeas');
-                    }
+
+                 // Update active tab based on user state after login/logout events
+                 if (currentUser && activeTab !== 'myIdeas') {
+                    setActiveTab('myIdeas');
+                 } else if (!currentUser && activeTab !== 'peoplesIdeas') {
+                    setActiveTab('peoplesIdeas');
                  }
-                 // More direct approach: update tab based on user state change
-                 // setActiveTab(currentUser ? 'myIdeas' : 'peoplesIdeas');
             });
             authSubscription = subscription; // Store the subscription to unsubscribe later
 
@@ -119,7 +118,8 @@ function App() {
             sliderRef.current.style.width = '0px';
             sliderRef.current.style.left = '0px';
         }
-    }, [activeTab, user, loadingAuth]); // Re-run when tab, user, or loading state changes
+        // Depend also on loadingAuth to ensure recalculation after auth completes
+    }, [activeTab, user, loadingAuth]);
 
     // --- Login Handler ---
     const handleLogin = async () => {
@@ -193,17 +193,33 @@ function App() {
                   setActiveTab={setActiveTab}
                   tabsRef={tabsRef} // Pass ref for slider calculation
                   sliderRef={sliderRef} // Pass ref for slider element
+                  isMockMode={isMockMode} // Pass mock mode status to Tabs if needed for disabling
               />
+
+              {/* --- NEW: Tab Description Text --- */}
+              <div className="tab-description">
+                 {/* Show MyIdeas description only when that tab is active AND user is logged in (or mock user exists) */}
+                 {activeTab === 'myIdeas' && user && (
+                    <> 
+                      <p>Your musical idea has a deadline.</p>
+                      <p>Complete it before it's revealed, or let it become a public inspiration.</p>
+                   </>                 )}
+                 {/* Show PeoplesIdeas description only when that tab is active */}
+                 {activeTab === 'peoplesIdeas' && (
+                   <p>Here are the musical ideas shared by our community.</p>
+                 )}
+              </div>
 
               {/* Main Content Area: Displays content based on the active tab */}
               <main className="content-area">
                   {/* Conditional Rendering for 'My Ideas' tab */}
                   {activeTab === 'myIdeas' ? (
                       user ? (
-                          // Show user's ideas if logged in
+                          // Show user's ideas if logged in (or mock user exists)
                           <MyIdeas user={user} isMockMode={isMockMode} />
                       ) : (
-                          // Show login prompt if not logged in
+                          // Show login prompt if 'myIdeas' is active but no user (and not mock mode)
+                          !isMockMode && // Don't show login prompt in mock mode if user is null
                           <div className="login-prompt">
                               <p>
                                   To be able to add and view your ideas, please{' '}

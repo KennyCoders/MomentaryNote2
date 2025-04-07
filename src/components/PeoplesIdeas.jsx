@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient';
 import AudioPlayer from './AudioPlayer';
 // Import necessary mock data and potentially the update function if needed elsewhere
 import { mockPublicIdeas, mockGetAudioUrl, updateMockIdeaVotes } from '../mockData';
+import heartIcon from '../assets/icons/red_heart_icon.png';
 
 // --- localStorage Helper Functions ---
 const VOTED_IDEAS_KEY = 'momentaryNoteUpvotes';
@@ -14,7 +15,7 @@ const getVotedIdeas = () => {
         // Use a Set for efficient lookups
         return voted ? new Set(JSON.parse(voted)) : new Set();
     } catch (e) {
-        console.error("Error reading voted ideas from localStorage:", e);
+        console.error("Error reading voted notes from localStorage:", e);
         return new Set(); // Return empty set on error
     }
 };
@@ -31,18 +32,14 @@ const markAsVoted = (ideaId) => {
         // Convert Set back to array for JSON serialization
         localStorage.setItem(VOTED_IDEAS_KEY, JSON.stringify([...votedSet]));
     } catch (e) {
-        console.error("Error saving voted idea to localStorage:", e);
+        console.error("Error saving voted note to localStorage:", e);
     }
 };
 // --- End localStorage Helpers ---
 
-
-// Helper function for random gradients
-const gradientClasses = [
-    'gradient-1', 'gradient-2', 'gradient-3', 'gradient-4', 'gradient-5',
-    'gradient-6', 'gradient-7', 'gradient-8', 'gradient-9', 'gradient-10'
-];
-const getRandomGradientClass = () => gradientClasses[Math.floor(Math.random() * gradientClasses.length)];
+// REMOVED: Helper function for random gradients (not needed anymore)
+// const gradientClasses = [ ... ];
+// const getRandomGradientClass = () => ...;
 
 // Helper function to sort ideas (Sorts by upvotes DESC, then creation date DESC)
 const sortIdeas = (ideas) => {
@@ -85,7 +82,7 @@ function PeoplesIdeas({ isMockMode }) {
 
         // MOCK MODE
         if (isMockMode) {
-            console.log("PeoplesIdeas: Running in MOCK MODE. Fetching mock 'Public Ideas'.");
+            console.log("PeoplesIdeas: Running in MOCK MODE. Fetching mock 'Public notes'.");
             try {
                  // Make sure mockPublicIdeas is treated as the source of truth
                 const currentMockIdeas = mockPublicIdeas || [];
@@ -95,7 +92,7 @@ function PeoplesIdeas({ isMockMode }) {
                 setPublicIdeas(sortedMockIdeas);
             } catch(mockError) {
                 console.error("Error processing mock data:", mockError);
-                setError("Failed to load mock ideas.");
+                setError("Failed to load mock notes.");
                 setPublicIdeas([]);
             } finally {
                 setLoading(false);
@@ -104,7 +101,7 @@ function PeoplesIdeas({ isMockMode }) {
         }
 
         // --- Live Mode (Supabase) ---
-        console.log("PeoplesIdeas: Running in LIVE MODE. Fetching public ideas from Supabase.");
+        console.log("People'sNotes: Running in LIVE MODE. Fetching public notes from Supabase.");
         try {
             const now = new Date().toISOString();
             const { data, error: dbError } = await supabase
@@ -123,8 +120,8 @@ function PeoplesIdeas({ isMockMode }) {
             const sortedData = sortIdeas(data || []);
             setPublicIdeas(sortedData);
         } catch (err) {
-            console.error('Error fetching public ideas:', err.message);
-            setError(`Failed to load ideas: ${err.message}`);
+            console.error('Error fetching public notes:', err.message);
+            setError(`Failed to load notes: ${err.message}`);
             setPublicIdeas([]); // Clear ideas on error
         } finally {
             setLoading(false);
@@ -167,7 +164,7 @@ function PeoplesIdeas({ isMockMode }) {
         // 3. Prepare the new vote count
         const numericCurrentUpvotes = Number(currentUpvotes) || 0;
         const newVoteCount = numericCurrentUpvotes + 1;
-        console.log(`Attempting to upvote idea ${ideaId}. Current: ${numericCurrentUpvotes}, New: ${newVoteCount}`);
+        console.log(`Attempting to upvote note ${ideaId}. Current: ${numericCurrentUpvotes}, New: ${newVoteCount}`);
 
         // 4. Optimistic UI Update
         const optimisticallyUpdatedIdeas = publicIdeas.map(idea => {
@@ -183,7 +180,7 @@ function PeoplesIdeas({ isMockMode }) {
 
         // MOCK MODE
         if (isMockMode) {
-            console.log(`PeoplesIdeas: MOCK MODE. Updating vote for ${ideaId} to ${newVoteCount}.`);
+            console.log(`PeoplesNoes: MOCK MODE. Updating vote for ${ideaId} to ${newVoteCount}.`);
             try {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 updateMockIdeaVotes(ideaId, newVoteCount); // Update central mock data (optional)
@@ -204,7 +201,7 @@ function PeoplesIdeas({ isMockMode }) {
         }
 
         // LIVE MODE (Supabase)
-        console.log(`PeoplesIdeas: LIVE MODE. Updating vote for ${ideaId} in Supabase to ${newVoteCount}.`);
+        console.log(`PeoplesNotes: LIVE MODE. Updating vote for ${ideaId} in Supabase to ${newVoteCount}.`);
         try {
             // Send the calculated newVoteCount directly.
             const { data, error: updateError } = await supabase
@@ -216,18 +213,18 @@ function PeoplesIdeas({ isMockMode }) {
 
             if (updateError) {
                  if (updateError.code === 'PGRST116') { // Example: Row not found
-                     console.warn(`Supabase update failed for idea ${ideaId}, likely deleted.`, updateError);
-                     setError(`Could not vote, the idea may no longer exist.`);
+                     console.warn(`Supabase update failed for note ${ideaId}, likely deleted.`, updateError);
+                     setError(`Could not vote, the note may no longer exist.`);
                      setPublicIdeas(prevIdeas => sortIdeas(prevIdeas.filter(idea => idea.id !== ideaId)));
                  } else { throw updateError; } // Rethrow other errors
             } else {
-                 console.log(`Successfully upvoted idea ${ideaId} in Supabase. DB New count: ${data?.upvotes ?? newVoteCount}`);
+                 console.log(`Successfully upvoted note ${ideaId} in Supabase. DB New count: ${data?.upvotes ?? newVoteCount}`);
                  markAsVoted(ideaId); // Mark locally only on success
                  setLocalVotes(prevVotes => new Set(prevVotes).add(ideaId));
             }
         } catch (err) {
-            console.error(`Error upvoting idea ${ideaId} in Supabase:`, err);
-            setError(`Failed to upvote idea. Please try again.`);
+            console.error(`Error upvoting note ${ideaId} in Supabase:`, err);
+            setError(`Failed to upvote note. Please try again.`);
             // Rollback optimistic update on error
             setPublicIdeas(sortIdeas(publicIdeas.map(idea =>
                 idea.id === ideaId ? { ...idea, upvotes: numericCurrentUpvotes } : idea
@@ -270,7 +267,7 @@ function PeoplesIdeas({ isMockMode }) {
                             return null;
                         }
 
-                        const gradientClass = getRandomGradientClass();
+                        // REMOVED: const gradientClass = getRandomGradientClass();
                         const isProcessing = upvotingId === idea.id;
                         // Check local state for voted status
                         const alreadyVoted = localVotes.has(idea.id);
@@ -278,7 +275,8 @@ function PeoplesIdeas({ isMockMode }) {
                         const voteCount = idea.upvotes ?? 0;
 
                         return (
-                            <div key={idea.id} className={`idea-box ${gradientClass}`}>
+                            // Use only the base 'idea-box' class, no gradient class
+                            <div key={idea.id} className="idea-box">
                                 {/* Header: Filename & BPM */}
                                 <div className="idea-header-info">
                                     <p className="idea-filename">Name: {idea.original_filename || 'Unknown Filename'}</p>
@@ -306,7 +304,7 @@ function PeoplesIdeas({ isMockMode }) {
                                              title={alreadyVoted ? "Already upvoted" : "Upvote"}
                                          >
                                              {/* Your Emojis */}
-                                             {alreadyVoted ? '✔️' : '❤️'}
+                                             {alreadyVoted ? '✔️' : <img src={heartIcon} alt="Upvote" className="upvote-icon" /> }
                                          </button>
                                          {/* Vote Count Display */}
                                          <span className="upvote-count" aria-live="polite">

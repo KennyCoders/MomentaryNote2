@@ -6,13 +6,6 @@ import ConfirmationModal from './ConfirmationModal';
 // Import mock data - use different names internally if needed to avoid confusion, DO NOT REASSIGN THESE IMPORTS
 import { mockMyIdeas as sourceMockMyIdeas, mockPublicIdeas as sourceMockPublicIdeas, mockGetAudioUrl, updateMockIdeaVotes } from '../mockData';
 
-// Helper function to get a random gradient class for cards
-const gradientClasses = [
-    'gradient-1', 'gradient-2', 'gradient-3', 'gradient-4', 'gradient-5',
-    'gradient-6', 'gradient-7', 'gradient-8', 'gradient-9', 'gradient-10'
-];
-const getRandomGradientClass = () => gradientClasses[Math.floor(Math.random() * gradientClasses.length)];
-
 // Constants for file validation
 const ALLOWED_MIME_TYPES = ['audio/mpeg', 'audio/wav', 'audio/wave', 'audio/ogg', 'audio/x-wav'];
 const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.ogg'];
@@ -151,15 +144,30 @@ function MyIdeas({ user, isMockMode }) {
 
     // --- Actual Upload Logic ---
     const proceedWithUpload = async () => {
+        console.log("Starting proceedWithUpload..."); // Log start
         // Re-check required fields (safety)
-        if (!file || duration === '') { setFormError("Missing file or visibility option."); setIsModalOpen(false); return; }
+        if (!file || duration === '') {
+            setFormError("Missing file or visibility option.");
+            setIsModalOpen(false);
+            console.error("Upload cancelled: Missing file or duration."); // Log error
+            return;
+        }
         // Re-validate BPM (safety)
         const bpmValidation = validateBpm(bpm);
-        if (!bpmValidation.isValid) { setFormError(bpmValidation.error); setIsModalOpen(false); return; }
+        if (!bpmValidation.isValid) {
+            setFormError(bpmValidation.error);
+            setIsModalOpen(false);
+            console.error("Upload cancelled: Invalid BPM."); // Log error
+            return;
+        }
         const bpmToSave = bpmValidation.value; // Use the parsed value (or null)
 
         // Start upload process
-        setUploading(true); setFormError(null); setFormMessage(''); setIsModalOpen(false);
+        setUploading(true);
+        setFormError(null);
+        setFormMessage('');
+        setIsModalOpen(false); // Modal closed BEFORE async ops
+        console.log("Uploading state set to true. Modal closed.");
 
         // --- MOCK MODE ---
         if (isMockMode) {
@@ -179,14 +187,27 @@ function MyIdeas({ user, isMockMode }) {
                 // Reset form state
                 setFile(null); setSelectedFileName(''); setDescription(''); setDuration(''); setBpm('');
                 const fileInput = document.getElementById('audioFile'); if (fileInput) fileInput.value = null;
-            } catch (simulatedError) { console.error("Mock upload simulation error:", simulatedError); setFormError("Mock upload failed."); setFormMessage('');}
-            finally { setUploading(false); }
+                console.log("Mock form reset."); // Log form reset
+            } catch (simulatedError) {
+                console.error("Mock upload simulation error:", simulatedError);
+                setFormError("Mock upload failed.");
+                setFormMessage('');
+            }
+            finally {
+                console.log("Mock mode finally block: Setting uploading to false."); // Log finally
+                setUploading(false); // Stop loading indicator
+            }
             return; // End mock mode execution
         }
 
         // --- LIVE MODE ---
         console.log("MyIdeas: LIVE MODE. Uploading to Supabase with BPM:", bpmToSave);
-        if (!user) { setFormError("User not authenticated."); setUploading(false); return; } // Check user again
+        if (!user) {
+            setFormError("User not authenticated.");
+            setUploading(false); // Ensure state is reset
+            console.error("Upload cancelled: User not authenticated."); // Log error
+            return;
+        } // Check user again
 
         const filePath = `public/${user.id}/${Date.now()}_${file.name}`;
         const hiddenDurationSeconds = parseInt(duration, 10);
@@ -194,14 +215,19 @@ function MyIdeas({ user, isMockMode }) {
         const now = new Date();
         const expiresAt = isPublic ? now.toISOString() : new Date(now.getTime() + hiddenDurationSeconds * 1000).toISOString();
 
+        let uploadSuccessful = false; // Flag to track success
+
         try {
             // 1. Upload file to Storage
             setFormMessage('Uploading file...');
+            console.log("Attempting storage upload..."); // Log storage start
             const { error: uploadError } = await supabase.storage.from('ideas-audio').upload(filePath, file);
             if (uploadError) throw new Error(`Storage Error: ${uploadError.message}`);
+            console.log("Storage upload successful."); // Log storage success
 
             // 2. Insert record into Database
             setFormMessage('Saving idea details...');
+            console.log("Attempting database insert..."); // Log db start
             const { data: insertedData, error: insertError } = await supabase
              .from('ideas')
              .insert({
@@ -217,24 +243,41 @@ function MyIdeas({ user, isMockMode }) {
              }).select().single(); // Select to get the inserted row back
 
             if (insertError) throw new Error(`Database Error: ${insertError.message}`);
+            console.log('Database insert successful:', insertedData); // Log db success
+
+            uploadSuccessful = true; // Mark as successful before proceeding
 
             // Success: Refresh list and reset form
-            console.log('Upload successful:', insertedData);
             setFormMessage('Idea uploaded successfully!');
-            fetchMyIdeas(); // Refresh local state by re-fetching
+            console.log("Calling fetchMyIdeas()..."); // Log fetch start
+            await fetchMyIdeas(); // Wait for fetch to complete if necessary
+            console.log("fetchMyIdeas() completed. Resetting form..."); // Log fetch complete & form reset start
             setFile(null); setSelectedFileName(''); setDescription(''); setDuration(''); setBpm('');
-            const fileInput = document.getElementById('audioFile'); if (fileInput) fileInput.value = null;
+            const fileInput = document.getElementById('audioFile');
+            if (fileInput) fileInput.value = null;
+            console.log("Form reset complete."); // Log form reset complete
+
+            // --- Optional: LAST RESORT REFRESH ---
+            // Uncomment the line below ONLY if debugging fails and you need a temporary fix
+            // console.log("Upload successful. Reloading page..."); window.location.reload();
 
         } catch (err) {
-            console.error('Upload process error:', err);
+            console.error('Upload process error:', err); // Log any caught error
             setFormError(`Upload failed: ${err.message}`);
             setFormMessage('');
              // Attempt to remove orphaned file if DB insert failed after storage upload
-             if (err.message.includes('Database Error') && !err.message.includes('Storage Error')) {
+             if (!uploadSuccessful && err.message.includes('Database Error')) {
                  console.warn("Database insert failed after file upload. Attempting to remove orphaned file:", filePath);
-                 await supabase.storage.from('ideas-audio').remove([filePath]);
+                 try {
+                    await supabase.storage.from('ideas-audio').remove([filePath]);
+                    console.log("Orphaned file removal attempt finished."); // Log removal attempt
+                 } catch (removeError) {
+                    console.error("Error removing orphaned file:", removeError); // Log removal error
+                 }
              }
         } finally {
+            // This block ALWAYS runs, whether try succeeded or failed
+            console.log("Live mode finally block: Setting uploading to false."); // Log finally block execution
             setUploading(false); // Stop loading indicator
         }
     };
@@ -347,6 +390,7 @@ function MyIdeas({ user, isMockMode }) {
                 <div className="upload-section">
                     <h2 className="upload-section-title">
                         Upload New{' '}
+                        {/* These spans now get styled by the updated CSS to match the main title */}
                         <span className="upload-title-char">N</span>
                         <span className="upload-title-char">o</span>
                         <span className="upload-title-char">t</span>
@@ -364,13 +408,16 @@ function MyIdeas({ user, isMockMode }) {
                             <input type="file" id="audioFile" accept=".mp3,audio/mpeg,.wav,audio/wav,audio/wave,.ogg,audio/ogg" onChange={handleFileChange} disabled={uploading} required className="visually-hidden-file-input" />
                         </div>
                         {/* Description */}
-                        <div className="form-group"> <label htmlFor="description">Description (optional):</label> <textarea id="description" value={description} onChange={handleDescriptionChange} rows="3" disabled={uploading} maxLength={200} /> </div>
+                        <div className="form-group"> <label htmlFor="description">Description (optional):</label> <textarea id="description" value={description} onChange={handleDescriptionChange} rows="2" disabled={uploading} maxLength={200} /> </div>
                         {/* BPM Input */}
                         <div className="form-group"> <label htmlFor="bpm">BPM (optional, 0-500):</label> <input type="number" id="bpm" value={bpm} onChange={handleBpmChange} placeholder="e.g., 120" min="0" max="500" step="1" disabled={uploading} className="bpm-input" /> </div>
                         {/* Visibility Select */}
                         <div className="form-group"> <label htmlFor="duration">Visibility:</label> <select id="duration" value={duration} onChange={handleDurationChange} disabled={uploading} required> <option value="" disabled>-- Select visibility --</option> <option value="0">Make Public Immediately</option> <option value="604800">Hidden for 1 Week</option> <option value="1209600">Hidden for 2 Weeks</option> <option value="2592000">Hidden for 1 Month</option> </select> </div>
                         {/* Submit Button */}
-                        <button type="submit" className="btn btn-primary" disabled={uploading || !file || duration === ''}> {uploading ? 'Uploading...' : 'Add Note'} </button>
+                        <button type="submit" className="btn btn-primary" disabled={uploading || !file || duration === ''}>
+                           {/* Check the 'uploading' state correctly disables the button */}
+                           {uploading ? 'Uploading...' : 'Add Note'}
+                        </button>
                         {/* Feedback Area */}
                          <div className="feedback-area form-feedback"> {formError && <p className="error-message">{formError}</p>} {formMessage && <p className="info-message">{formMessage}</p>} </div>
                     </form>
@@ -381,11 +428,11 @@ function MyIdeas({ user, isMockMode }) {
 
                 {/* Idea List Section */}
                 <div className="ideas-list-section">
-                     <h2>Your Saved Ideas</h2>
+                     <h2>Your Saved Notes</h2>
                      {/* List Status: Error, Loading, Empty, or Grid */}
-                     {listError && <div className="feedback-area list-feedback"><p className="error-message">Error loading ideas: {listError}</p></div>}
+                     {listError && <div className="feedback-area list-feedback"><p className="error-message">Error loading notes: {listError}</p></div>}
                      {loadingIdeas ? <div className="loading-container">Loading your ideas...</div>
-                      : myIdeas.length === 0 && !listError ? <p style={{ textAlign: 'center' }}>You haven't uploaded any ideas yet.</p>
+                      : myIdeas.length === 0 && !listError ? <p style={{ textAlign: 'center' }}>You haven't uploaded any notes yet.</p>
                       : (
                          <div className="ideas-grid">
                              {/* Map over user's ideas */}
@@ -393,12 +440,12 @@ function MyIdeas({ user, isMockMode }) {
                                  // Defensive check
                                  if (!idea || !idea.id) { console.warn("Skipping invalid idea object in map:", idea); return null; }
 
-                                 const gradientClass = getRandomGradientClass();
                                  // Check if public now
                                  const isEffectivelyPublic = idea.is_public || (idea.expires_at && new Date(idea.expires_at) <= new Date());
 
                                  return (
-                                     <div key={idea.id} className={`idea-box ${gradientClass}`}>
+                                     // Use only the base 'idea-box' class, no gradient class
+                                     <div key={idea.id} className="idea-box">
                                          {/* Header: Filename & BPM */}
                                          <div className="idea-header-info">
                                              <p className="idea-filename">Name: {idea.original_filename || 'Unknown Filename'}</p>
@@ -411,7 +458,7 @@ function MyIdeas({ user, isMockMode }) {
                                          {/* Audio Player */}
                                          <AudioPlayer fileUrl={getAudioUrl(idea.file_path)} />
                                          {/* Dates / Status */}
-                                         <p className="idea-dates"> {/* Consider if this is needed if footer handles dates elsewhere */}
+                                         <p className="idea-dates"> {/* You might want to restyle this or integrate it into the footer for consistency */}
                                              {idea.hidden_duration_seconds === 0
                                                  ? `Public Since: ${new Date(idea.created_at || Date.now()).toLocaleDateString()}`
                                                  : `Expires: ${new Date(idea.expires_at || Date.now()).toLocaleString()}`
