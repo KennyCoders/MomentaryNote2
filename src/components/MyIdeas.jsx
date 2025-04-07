@@ -54,6 +54,7 @@ function MyIdeas({ user, isMockMode }) {
         if (isMockMode) {
              console.log("MyIdeas: Running in MOCK MODE. Fetching mock 'My Ideas'.");
              // Filter the imported source array for the current mock user
+             // Make sure sourceMockMyIdeas is correctly defined and exported in mockData.js
              const userMockIdeas = (sourceMockMyIdeas || []).filter(idea => idea.user_id === (user?.id || 'mock-user-123'));
              setMyIdeas(sortIdeas(userMockIdeas)); // Update local state with sorted data
              setLoadingIdeas(false);
@@ -242,7 +243,7 @@ function MyIdeas({ user, isMockMode }) {
     const handleConfirmUpload = () => { proceedWithUpload(); };
     const handleCancelUpload = () => { setIsModalOpen(false); console.log("Upload cancelled by user."); };
 
-    // --- Remove Idea Logic (Handles public dissociation correctly) ---
+    // --- Remove Idea Logic (Handles public dissociation via RPC) ---
     const handleRemoveIdea = async (ideaId, filePath, isPublic) => {
         setListError(null); // Clear previous list errors
 
@@ -256,7 +257,7 @@ function MyIdeas({ user, isMockMode }) {
             return; // User cancelled
         }
 
-        // --- MOCK MODE ---
+        // --- MOCK MODE (Corrected: No direct mutation) ---
         if (isMockMode) {
             if (isPublic) {
                 console.log(`MyIdeas: MOCK MODE. Dissociating public idea ${ideaId} from local list.`);
@@ -265,7 +266,6 @@ function MyIdeas({ user, isMockMode }) {
             } else {
                 console.log(`MyIdeas: MOCK MODE. Removing private idea ${ideaId} from local list.`);
                 setMyIdeas(currentIdeas => currentIdeas.filter(idea => idea.id !== ideaId)); // Update local state only
-                // *** NO direct mutation of imported arrays ***
                 console.warn(`Mock Mode: Private idea ${ideaId} removed from 'My Ideas' view only. Underlying shared mock data was NOT mutated.`);
             }
             return; // Exit mock mode logic
@@ -276,19 +276,25 @@ function MyIdeas({ user, isMockMode }) {
 
         try {
             if (isPublic) {
-                // Dissociate: Set user_id to null for this idea owned by this user
-                console.log(`LIVE MODE: Dissociating public idea ${ideaId} from user ${user.id}.`);
-                const { error: updateError } = await supabase
-                    .from('ideas').update({ user_id: null }).eq('id', ideaId).eq('user_id', user.id);
-                if (updateError) throw new Error(`Database error dissociating idea: ${updateError.message}`);
-                console.log(`Idea ${ideaId} disassociated successfully.`);
+                // *** Call RPC function to dissociate ***
+                console.log(`LIVE MODE: Calling RPC dissociate_my_public_idea for idea ${ideaId} by user ${user.id}.`);
+                const { error: rpcError } = await supabase.rpc(
+                    'dissociate_my_public_idea',
+                    { idea_id_to_dissociate: ideaId } // Pass the argument (ensure argument name matches SQL function)
+                );
+
+                if (rpcError) {
+                    console.error(`RPC Error dissociating idea ${ideaId}:`, rpcError);
+                    throw new Error(`Database error dissociating idea: ${rpcError.message}`);
+                }
+                console.log(`Idea ${ideaId} disassociated successfully via RPC.`);
+
             } else {
-                // Delete Permanently: Remove storage file then DB record
+                // Delete Permanently (Private Idea - Requires RLS DELETE policy)
                 console.log(`LIVE MODE: Permanently deleting private idea ${ideaId} by user ${user.id}.`);
                 // 1. Remove file from storage
                 if (filePath) {
                     const { error: storageError } = await supabase.storage.from('ideas-audio').remove([filePath]);
-                    // Log warning but continue to DB deletion attempt even if storage fails
                     if (storageError) console.warn(`Warning: Error deleting file ${filePath} from storage: ${storageError.message}`);
                 } else {
                      console.warn(`No file path for private idea ${ideaId}, cannot remove from storage.`);
@@ -298,13 +304,16 @@ function MyIdeas({ user, isMockMode }) {
                 if (dbError) throw new Error(`Database error deleting idea: ${dbError.message}`);
                 console.log(`Idea ${ideaId} deleted successfully.`);
             }
-            // Update Local State: Remove the idea from the list displayed in this component
+
+            // Update Local State (Same for both public dissociation and private delete)
             setMyIdeas(currentIdeas => currentIdeas.filter(idea => idea.id !== ideaId));
+
         } catch (err) {
             console.error('Error during idea removal:', err.message);
             setListError(`Failed to remove idea: ${err.message}`);
         }
     };
+    // --- End Remove Idea Logic ---
 
     // --- Get Audio URL ---
     const getAudioUrl = (filePath) => {
@@ -312,7 +321,7 @@ function MyIdeas({ user, isMockMode }) {
         if (!filePath) return null;
         try {
             const { data } = supabase.storage.from('ideas-audio').getPublicUrl(filePath);
-            // Handle potential null response from getPublicUrl if file doesn't exist or permissions issue
+            // Handle potential null response from getPublicUrl
             if (!data || !data.publicUrl) {
                 console.warn(`Could not get public URL for path: ${filePath}`);
                 return null;
@@ -324,7 +333,7 @@ function MyIdeas({ user, isMockMode }) {
     // --- Component Render ---
     return (
         <>
-            {/* Confirmation Modal for Upload */}
+            {/* Confirmation Modal */}
             <ConfirmationModal
                 isOpen={isModalOpen}
                 onClose={handleCancelUpload}
@@ -332,7 +341,7 @@ function MyIdeas({ user, isMockMode }) {
                 message="Upon expiration, uploaded files become available for use by other users. Do you agree?"
             />
 
-            {/* Main Container for MyIdeas */}
+            {/* Main Container */}
             <div className="my-ideas-container">
                 {/* Upload Section */}
                 <div className="upload-section">
@@ -343,12 +352,11 @@ function MyIdeas({ user, isMockMode }) {
                         <span className="upload-title-char">t</span>
                         <span className="upload-title-char">e</span>
                     </h2>
-                    <form onSubmit={handleUpload} className="upload-form" noValidate> {/* Added noValidate to rely on custom validation */}
-                        {/* File Input */}
+                    {/* Upload Form */}
+                    <form onSubmit={handleUpload} className="upload-form" noValidate>
+                         {/* File Input */}
                          <div className="form-group file-upload-group">
-                            <label htmlFor="audioFile">
-                                Audio File (MP3, WAV, OGG - max {MAX_FILE_SIZE_MB}MB):
-                            </label>
+                            <label htmlFor="audioFile"> Audio File (MP3, WAV, OGG - max {MAX_FILE_SIZE_MB}MB): </label>
                             <div className="file-input-container">
                                 <label htmlFor="audioFile" className="btn btn-secondary file-upload-button"> Select File </label>
                                 <span id="fileNameDisplay" className="file-name-display"> {selectedFileName ? selectedFileName : <span className="placeholder">No file chosen</span>} </span>
@@ -356,32 +364,17 @@ function MyIdeas({ user, isMockMode }) {
                             <input type="file" id="audioFile" accept=".mp3,audio/mpeg,.wav,audio/wav,audio/wave,.ogg,audio/ogg" onChange={handleFileChange} disabled={uploading} required className="visually-hidden-file-input" />
                         </div>
                         {/* Description */}
-                        <div className="form-group">
-                             <label htmlFor="description">Description (optional):</label>
-                             <textarea id="description" value={description} onChange={handleDescriptionChange} rows="3" disabled={uploading} maxLength={200} />
-                        </div>
+                        <div className="form-group"> <label htmlFor="description">Description (optional):</label> <textarea id="description" value={description} onChange={handleDescriptionChange} rows="3" disabled={uploading} maxLength={200} /> </div>
                         {/* BPM Input */}
-                        <div className="form-group">
-                            <label htmlFor="bpm">BPM (optional, 0-500):</label>
-                            <input type="number" id="bpm" value={bpm} onChange={handleBpmChange} placeholder="e.g., 120" min="0" max="500" step="1" disabled={uploading} className="bpm-input" />
-                        </div>
-                        {/* Visibility */}
-                        <div className="form-group">
-                            <label htmlFor="duration">Visibility:</label>
-                            <select id="duration" value={duration} onChange={handleDurationChange} disabled={uploading} required>
-                                 <option value="" disabled>-- Select visibility --</option>
-                                 <option value="0">Make Public Immediately</option>
-                                 <option value="604800">Hidden for 1 Week</option>
-                                 <option value="1209600">Hidden for 2 Weeks</option>
-                                 <option value="2592000">Hidden for 1 Month</option>
-                            </select>
-                        </div>
-                        {/* Submit */}
+                        <div className="form-group"> <label htmlFor="bpm">BPM (optional, 0-500):</label> <input type="number" id="bpm" value={bpm} onChange={handleBpmChange} placeholder="e.g., 120" min="0" max="500" step="1" disabled={uploading} className="bpm-input" /> </div>
+                        {/* Visibility Select */}
+                        <div className="form-group"> <label htmlFor="duration">Visibility:</label> <select id="duration" value={duration} onChange={handleDurationChange} disabled={uploading} required> <option value="" disabled>-- Select visibility --</option> <option value="0">Make Public Immediately</option> <option value="604800">Hidden for 1 Week</option> <option value="1209600">Hidden for 2 Weeks</option> <option value="2592000">Hidden for 1 Month</option> </select> </div>
+                        {/* Submit Button */}
                         <button type="submit" className="btn btn-primary" disabled={uploading || !file || duration === ''}> {uploading ? 'Uploading...' : 'Add Note'} </button>
-                        {/* Feedback */}
+                        {/* Feedback Area */}
                          <div className="feedback-area form-feedback"> {formError && <p className="error-message">{formError}</p>} {formMessage && <p className="info-message">{formMessage}</p>} </div>
                     </form>
-                </div>
+                </div> {/* End upload-section */}
 
                 {/* Separator */}
                 <div className="sleek-separator"></div>
@@ -389,7 +382,7 @@ function MyIdeas({ user, isMockMode }) {
                 {/* Idea List Section */}
                 <div className="ideas-list-section">
                      <h2>Your Saved Ideas</h2>
-                     {/* List Loading/Error/Empty States */}
+                     {/* List Status: Error, Loading, Empty, or Grid */}
                      {listError && <div className="feedback-area list-feedback"><p className="error-message">Error loading ideas: {listError}</p></div>}
                      {loadingIdeas ? <div className="loading-container">Loading your ideas...</div>
                       : myIdeas.length === 0 && !listError ? <p style={{ textAlign: 'center' }}>You haven't uploaded any ideas yet.</p>
@@ -397,20 +390,18 @@ function MyIdeas({ user, isMockMode }) {
                          <div className="ideas-grid">
                              {/* Map over user's ideas */}
                              {myIdeas.map((idea) => {
-                                 // Defensive check for potentially null/undefined ideas in the array
-                                 if (!idea || !idea.id) {
-                                     console.warn("Encountered invalid idea object in map:", idea);
-                                     return null;
-                                 }
+                                 // Defensive check
+                                 if (!idea || !idea.id) { console.warn("Skipping invalid idea object in map:", idea); return null; }
+
                                  const gradientClass = getRandomGradientClass();
-                                 // Determine if idea is public based on flag OR expiry date
+                                 // Check if public now
                                  const isEffectivelyPublic = idea.is_public || (idea.expires_at && new Date(idea.expires_at) <= new Date());
+
                                  return (
                                      <div key={idea.id} className={`idea-box ${gradientClass}`}>
-                                         {/* Header with Filename & BPM */}
+                                         {/* Header: Filename & BPM */}
                                          <div className="idea-header-info">
                                              <p className="idea-filename">Name: {idea.original_filename || 'Unknown Filename'}</p>
-                                             {/* Display BPM only if it exists and is not null */}
                                              {idea.bpm !== null && idea.bpm !== undefined && (
                                                  <p className="idea-bpm">BPM: {idea.bpm}</p>
                                              )}
@@ -419,14 +410,12 @@ function MyIdeas({ user, isMockMode }) {
                                          {idea.description && <p className="idea-description">{idea.description}</p>}
                                          {/* Audio Player */}
                                          <AudioPlayer fileUrl={getAudioUrl(idea.file_path)} />
-                                         {/* Dates/Status */}
-                                         <p className="idea-dates">
+                                         {/* Dates / Status */}
+                                         <p className="idea-dates"> {/* Consider if this is needed if footer handles dates elsewhere */}
                                              {idea.hidden_duration_seconds === 0
-                                                 ? `Public Since: ${new Date(idea.created_at || Date.now()).toLocaleDateString()}` // Add fallback date just in case
-                                                 : `Expires: ${new Date(idea.expires_at || Date.now()).toLocaleString()}` // Add fallback date just in case
+                                                 ? `Public Since: ${new Date(idea.created_at || Date.now()).toLocaleDateString()}`
+                                                 : `Expires: ${new Date(idea.expires_at || Date.now()).toLocaleString()}`
                                              }
-                                             {/* Optional: Explicitly show status */}
-                                             {/* {isEffectivelyPublic && <span style={{ display: 'block', fontSize: '0.8em', opacity: 0.7 }}>Status: Public</span>} */}
                                          </p>
                                          {/* Remove Button */}
                                          <button
@@ -438,7 +427,7 @@ function MyIdeas({ user, isMockMode }) {
                                      </div>
                                  );
                              })}
-                         </div>
+                         </div> // End ideas-grid
                      )}
                  </div> {/* End ideas-list-section */}
              </div> {/* End my-ideas-container */}
