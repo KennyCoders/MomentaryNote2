@@ -420,6 +420,43 @@ button:disabled, .btn:disabled {
 }
 
 /* Audio Player */
+
+.audio-player-wrapper {
+  /* Styles for the container div if needed */
+  margin-top: 8px; /* Keep existing margin */
+  /* Add display: flex and align-items if you want the download link next to the player */
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between player and download link */
+}
+
+.idea-box audio { /* Target the audio element specifically within an idea box */
+  width: 100%; /* Make player responsive */
+  flex-grow: 1; /* Allow player to take available space */
+
+  /* --- Dark Theme Filter --- */
+  /* This inverts colors, rotates hues to compensate, and slightly dims */
+  filter: invert(1) hue-rotate(180deg) brightness(0.9);
+
+  /* Optional: Adjust border-radius if desired */
+  border-radius: 4px;
+}
+
+.audio-player-message,
+.audio-player-error {
+  font-size: 0.9em;
+  color: var(--text-medium); /* Use medium text color */
+  padding: 5px 0;
+}
+.audio-player-error {
+  color: var(--danger-color); /* Use danger color for errors */
+}
+
+.audio-player-wrapper a:hover {
+  color: var(--primary-hover-color); /* Use hover color */
+  text-decoration: underline; /* Add underline on hover */
+}
+
 .idea-box audio, .idea-box .audio-player-container {
   width: 100%; margin-top: 0.5rem; margin-bottom: 0.75rem;
   /* Consider adding filter: invert(1) brightness(0.9) hue-rotate(180deg); if default player looks bad */
