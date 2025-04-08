@@ -1,26 +1,28 @@
 // src/components/ConfirmationModal.jsx
-import React from 'react';
-import './ConfirmationModal.css'; // We'll create this CSS file next
+import React, { useEffect } from 'react';
+import './ConfirmationModal.css';
 
 function ConfirmationModal({ isOpen, onClose, onConfirm, message }) {
+
+    useEffect(() => {
+        const originalOverflow = document.body.style.overflow;
+
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.body.style.overflow = originalOverflow || 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen) {
         return null;
     }
 
-    // Prevent background scrolling when modal is open
-    React.useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
-
-
     return (
-        <div className="modal-overlay" onClick={onClose}> {/* Close on overlay click */}
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}> {/* Prevent closing when clicking inside modal */}
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <p>{message}</p>
                 <div className="modal-actions">
                     <button className="btn btn-primary modal-btn-confirm" onClick={onConfirm}>
